@@ -3,3 +3,17 @@ shots/
 *.tmp
 .DS_Store
 Thumbs.db
+.gstack/
+
+# Node / Vite
+node_modules/
+dist/
+*.tsbuildinfo
+.vite/
+
+# 本地编辑器与系统文件
+.vscode/
+.idea/
+
+# 临时打包
+*.zip

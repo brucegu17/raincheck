@@ -1,0 +1,92 @@
+/* ============================================================
+ * Design Tokens · 单一事实来源（Single Source of Truth）
+ * 所有组件只能引用这里的变量，不允许写裸 px
+ * ============================================================ */
+:root {
+  /* ----- Spacing scale（8 像素基线，T 恤号制）----- */
+  --space-0: 0;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  /* ----- Typography scale（type ramp，无散点 px）----- */
+  --font-xs:  12px;
+  --font-sm:  13.5px;
+  --font-md:  15px;
+  --font-lg:  17px;
+  --font-xl:  20px;
+  --font-2xl: 24px;
+  --font-3xl: 30px;
+  --font-4xl: 38px;
+
+  --leading-tight: 1.25;
+  --leading-base:  1.55;
+  --leading-loose: 1.7;
+
+  /* ----- Radius ----- */
+  --radius-1: 6px;
+  --radius-2: 10px;
+  --radius-3: 14px;
+  --radius-4: 18px;
+  --radius-5: 24px;
+  --radius-pill: 999px;
+
+  /* ----- Shadow（绘本风格的硬阴影） ----- */
+  --shadow-ink-1: 0 3px 0 var(--c-ink);
+  --shadow-ink-2: 0 5px 0 var(--c-ink);
+  --shadow-ink-3: 0 6px 0 var(--c-ink), 0 14px 24px rgba(23, 85, 91, 0.18);
+
+  /* ----- Border ----- */
+  --bw-1: 2px;
+  --bw-2: 3px;
+
+  /* ----- Color palette（命名按用途，非外观） ----- */
+  --c-ink:      #1B3A40;
+  --c-paper:    #FFFFFF;
+  --c-sky:      #BDE9FF;
+  --c-sky-2:    #E8F8FF;
+  --c-water:    #4FC3DC;
+  --c-water-d:  #2A9DB5;
+  --c-grass:    #9BE070;
+  --c-sun:      #FFD23F;
+  --c-coral:    #FF7B6B;
+  --c-candy:    #FF9F1C;
+  --c-good:     #52C474;
+  --c-purple:   #B388FF;
+
+  --c-text:        #1B3A40;
+  --c-text-muted:  #5b7a99;
+  --c-text-subtle: #7a8694;
+
+  /* ----- Layout 预算 ----- */
+  --layout-max: 980px;       /* 主内容最大宽度 */
+  --reading-max: 720px;      /* 阅读段落最大宽度 */
+  --header-h: 64px;          /* 顶部 header 目标高度（含 HUD） */
+
+  /* ----- Z-index ----- */
+  --z-toast: 90;
+  --z-modal: 100;
+  --z-flash: 200;
+
+  /* ----- Motion ----- */
+  --ease-snap: cubic-bezier(.2, 1.5, .4, 1);
+  --ease-pop:  cubic-bezier(.2, 1.6, .4, 1);
+  --dur-fast:  150ms;
+  --dur-med:   300ms;
+  --dur-slow:  450ms;
+}
+
+@media (max-width: 640px) {
+  :root {
+    --font-3xl: 26px;
+    --font-4xl: 30px;
+    --space-7: 32px;
+    --space-8: 48px;
+    --header-h: 56px;
+  }
+}

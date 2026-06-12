@@ -1,24 +1,63 @@
 # 🌊 洪水预报员 · 清溪镇保卫战
 
-面向小学四年级的 AI 科普课堂游戏（单文件 HTML，离线可用）。
-灵感参考 Google Research「AI Quests · Market Marshes」。
+面向 8–12 岁的 AI 科普闯关游戏。一局 8–10 分钟，走完
+**数据收集 → 数据清洗 → 特征选择 → 模型训练 → 查看预测概率 → 人类决策**
+一条完整的 AI 工程主线。
 
-## 玩法
-收集数据 → 清洗数据 → 训练模型 → 预测与决策，四关走完一个真实 AI 工程流程。
+🎮 **在线试玩：** https://brucegu17.github.io/raincheck/
 
-## 课堂特性
-- A/B/C 三套题集随机抽取，**相邻两位学员严格不重复**
-- 满分 100 分 + 星级 + 称号，本机成绩榜，可导出 CSV
-- 云博士语音讲解（浏览器 TTS）、合成背景音乐与音效（Web Audio，零外部文件）
-- 全屏剧情式决策关、绘本风探索小镇
+## 主要特性
 
-## 运行
-直接双击 `game.html` 用浏览器打开即可，无需联网、无需安装。
+- 8–10 分钟一局，含 4 关 + 入场警报 + 通关结业
+- 探险 / 挑战 双难度
+- 三套题集 A/B/C 随机抽取且**相邻两次不重复**（适合连堂课）
+- 4 件防洪装备 + 8 个隐藏成就 + 本机排行榜 + CSV 成绩单导出
+- 浏览器原生中文 TTS（云博士语音）+ Web Audio 合成 BGM
+- **零外部资源**：所有 SVG / 音效 / 文字都内联，离线可玩
+- 支持 `prefers-reduced-motion`
 
-## 版本演进
-| 标签 | 说明 |
+## 玩它的三种方式
+
+| 场景 | 怎么做 |
 |---|---|
-| v1-audio | 音乐音效 + 云博士语音 + 文字精简 |
-| v2-explore | 第一关改为探索小镇找数据（Google 风格发现弹窗） |
-| v3-art | 场景绘本化大改：巨树吊桥黄铜仪器 + 结业页重画 + 特征乱序 |
-| v4-story | 决策关全屏剧情化 + 相邻题集不重复保证 |
+| 在线直接玩 | 浏览器打开 https://brucegu17.github.io/raincheck/ |
+| 本地离线玩 | 下载 [`dist/index.html`](https://github.com/brucegu17/raincheck/releases) → 双击 |
+| 自己改代码 | `git clone` → `npm install` → `npm run dev` |
+
+## 开发
+
+```sh
+npm install
+npm run dev        # http://localhost:5273/
+npm run build      # 产物：dist/index.html（单文件）
+```
+
+技术栈：Vue 3 · Vite · TypeScript · Pinia · Howler.js · `vite-plugin-singlefile`
+
+## 项目结构
+
+```
+src/
+├── design/        Design tokens + CSS primitives
+├── primitives/    Stack / Cluster / Grid / Center 布局基元
+├── components/    TopHud · MentorCard · AlarmIntro · EquipReward 等
+├── scenes/        SceneIntro · Collect · Clean · Train · Deploy · End
+├── game/          Pinia store · 三套题集 · 装备 · 成就
+├── utils/         音频 · TTS · localStorage · CSV
+└── assets/        Town SVG · 云博士 · 天气图标
+```
+
+详细架构参考 [`CLAUDE.md`](./CLAUDE.md)；UI 质量自检清单参考
+[`.claude/skills/ui-quality.md`](./.claude/skills/ui-quality.md)。
+
+## 部署到 GitHub Pages
+
+`.github/workflows/pages.yml` 已配置好：push 到 `main` 会自动构建并部署到
+https://brucegu17.github.io/raincheck/。
+
+构建时 `GITHUB_PAGES=true` 让 Vite 使用 `/raincheck/` 作为 base path。
+本地 build（不带这个环境变量）则使用 `./` 相对路径，产物可直接双击。
+
+## License
+
+MIT
