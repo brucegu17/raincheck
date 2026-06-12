@@ -384,6 +384,91 @@ tbody tr.row-reveal-bad td:nth-child(n+2){text-decoration:line-through}
   .dmodal-ic{width:130px;height:130px}
 }
 
+
+/* ═════ 数据点 = 发光四角星（原版风格）═════ */
+.hs{width:58px;height:58px}
+.hs .hs-glow{position:absolute;inset:-24px;border-radius:50%;
+  background:radial-gradient(closest-side, rgba(255,255,255,.95), rgba(255,238,170,.45) 55%, transparent);
+  animation:glowpulse 1.7s ease-in-out infinite}
+@keyframes glowpulse{0%,100%{transform:scale(.86);opacity:.85}50%{transform:scale(1.12);opacity:1}}
+.hs .hs-halo{position:absolute;inset:-4px;border-radius:50%;border:2.5px solid rgba(255,255,255,.85);
+  animation:hsping 1.8s ease-out infinite}
+.hs .hs-star{position:absolute;inset:9px;filter:drop-shadow(0 0 7px rgba(255,250,210,.95));
+  animation:starspin 5.5s linear infinite}
+.hs .hs-star2{inset:23px 1px auto auto;width:16px;height:16px;animation:sparkle 1.3s ease-in-out infinite}
+@keyframes starspin{from{transform:rotate(0deg) scale(1)}50%{transform:rotate(180deg) scale(.84)}to{transform:rotate(360deg) scale(1)}}
+.hs .hs-badge{position:absolute;inset:6px;width:auto;height:auto;display:none;border-width:3px;box-shadow:0 3px 0 rgba(27,58,64,.3)}
+.hs:hover .hs-star{transform:scale(1.25)}
+.hs.found .hs-glow,.hs.found .hs-halo,.hs.found .hs-star,.hs.found .hs-star2{display:none}
+.hs.found .hs-badge{display:flex;opacity:.92;filter:saturate(.75)}
+.hs.taken .hs-badge{opacity:1;filter:none}
+.scene-tag{position:absolute;top:14px;left:14px;z-index:6;background:rgba(255,253,246,.92);
+  border:2.5px solid var(--ink);border-radius:99px;padding:5px 14px;font-size:13px;font-weight:900;
+  box-shadow:0 3px 0 rgba(27,58,64,.4)}
+
+/* ═════ 全局美化 ═════ */
+body{background:linear-gradient(180deg,#CDEDF3 0%,#E6F6EE 52%,#F4FAEE 100%)}
+header#hdr{background:linear-gradient(180deg,#1D6F76 0%,#114750 100%)}
+.btn{background:linear-gradient(180deg,#FFD964 0%,#FFB30F 78%);
+  box-shadow:0 5px 0 #B97E00, 0 10px 18px rgba(23,85,91,.22);
+  border-width:3px;text-shadow:0 1px 0 rgba(255,255,255,.5)}
+.btn:hover{transform:translateY(-2px);box-shadow:0 7px 0 #B97E00, 0 14px 22px rgba(23,85,91,.26)}
+.btn:active{transform:translateY(2px);box-shadow:0 2px 0 #B97E00}
+.btn:disabled{box-shadow:0 4px 0 #B0A98F}
+.mentor,.tip,.train-panel,.route-strip,.explore,.dock,.day-card,.table-wrap,.scoreboard,.reflect{
+  box-shadow:0 6px 0 var(--ink), 0 18px 30px rgba(23,85,91,.14)}
+.mentor{background:linear-gradient(180deg,#FFFFFF 0%,#FBF7EC 100%)}
+h1,h2{text-shadow:0 2px 0 rgba(255,255,255,.85)}
+h2 .tag{transform:rotate(-3deg);display:inline-block}
+.step.now{box-shadow:0 0 0 3px rgba(255,217,100,.45)}
+.dock-chip .dock-q{animation:qbob 1.6s ease-in-out infinite}
+@keyframes qbob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+.dmodal-info h3{text-shadow:0 0 26px rgba(190,170,255,.7)}
+
+
+/* ═════ 结业页：奖章 + 光芒 + 绶带横幅 ═════ */
+.badge-wrap{padding:26px 0 8px}
+.award{position:relative;width:226px;height:252px;margin:0 auto 2px}
+.award-medal{position:relative;z-index:2;width:100%;height:100%;
+  filter:drop-shadow(0 9px 0 rgba(27,58,64,.28)) drop-shadow(0 16px 30px rgba(245,178,42,.4));
+  animation:awardin .8s cubic-bezier(.2,1.5,.4,1) backwards}
+@keyframes awardin{from{transform:scale(.3) rotate(-14deg);opacity:0}to{transform:scale(1) rotate(0)}}
+.award-rays{position:absolute;left:50%;top:104px;width:430px;height:430px;transform:translate(-50%,-50%);
+  background:repeating-conic-gradient(rgba(255,206,74,.4) 0 8deg, transparent 8deg 19deg);
+  border-radius:50%;z-index:1;animation:rayspin 22s linear infinite;
+  -webkit-mask:radial-gradient(closest-side,#000 18%,rgba(0,0,0,.5) 48%,transparent 72%);
+  mask:radial-gradient(closest-side,#000 18%,rgba(0,0,0,.5) 48%,transparent 72%)}
+@keyframes rayspin{from{transform:translate(-50%,-50%) rotate(0)}to{transform:translate(-50%,-50%) rotate(360deg)}}
+.aspark{position:absolute;z-index:3;color:#FFD23F;text-shadow:0 0 9px rgba(255,220,110,.9);
+  animation:sparkle 1.4s ease-in-out infinite}
+.aspark.a1{top:8px;left:8px;font-size:25px}
+.aspark.a2{top:42px;right:-4px;font-size:18px;animation-delay:.4s}
+.aspark.a3{bottom:66px;left:-16px;font-size:20px;animation-delay:.8s}
+.aspark.a4{top:-8px;right:54px;font-size:14px;animation-delay:.2s}
+.ribbon{position:relative;display:inline-block;margin:2px 0 10px}
+.ribbon::before,.ribbon::after{content:"";position:absolute;top:11px;height:calc(100% - 10px);width:52px;
+  background:#C0473F;border:3px solid var(--ink);z-index:0}
+.ribbon::before{left:-40px;clip-path:polygon(0 0,100% 0,100% 100%,0 100%,16px 50%)}
+.ribbon::after{right:-40px;clip-path:polygon(0 0,100% 0,calc(100% - 16px) 50%,100% 100%,0 100%)}
+.ribbon h1{position:relative;z-index:1;margin:0;padding:10px 38px 12px;font-size:31px;color:#FFF;
+  background:linear-gradient(180deg,#FF8573 0%,#E2574C 60%);
+  border:3.5px solid var(--ink);border-radius:10px;
+  box-shadow:0 6px 0 var(--ink), 0 14px 24px rgba(226,87,76,.3);
+  text-shadow:0 2.5px 0 rgba(27,58,64,.5);letter-spacing:3px}
+#endSub{font-size:15.5px;font-weight:800;margin-top:4px}
+.stars{font-size:42px;letter-spacing:10px;margin:10px 0 6px;
+  filter:drop-shadow(0 4px 0 rgba(27,58,64,.22))}
+.score-line{display:inline-block;background:#FFFDF6;border:2.5px solid var(--ink);border-radius:99px;
+  padding:6px 18px;box-shadow:0 3px 0 var(--ink);font-weight:900;color:var(--ink);font-size:13.5px}
+.badge-wrap .score-line{margin-top:4px}
+@media (max-width:640px){
+  .award{width:178px;height:200px}
+  .award-rays{width:320px;height:320px;top:82px}
+  .ribbon h1{font-size:23px;padding:8px 22px 10px}
+  .ribbon::before{left:-28px;width:40px}.ribbon::after{right:-28px;width:40px}
+  .stars{font-size:33px;letter-spacing:7px}
+}
+
 </style>
 </head>
 <body>
@@ -418,23 +503,7 @@ tbody tr.row-reveal-bad td:nth-child(n+2){text-decoration:line-through}
   <h1><span class="wiggle">🛶</span> 清溪镇告急！</h1>
   <p class="sub">用 AI 保护河畔大集 🛡️</p>
 
-  <div class="scene" id="introScene">
-    <span class="label">清溪镇 · 河畔大集</span>
-    <div class="scloud" style="top:18px;animation-delay:-4s"></div>
-    <div class="scloud" style="top:40px;animation-delay:-16s;transform:scale(.7)"></div>
-    <div class="house" style="left:12%"></div>
-    <div class="stall" style="left:29%"></div>
-    <div class="tree"  style="left:41%"></div>
-    <div class="house" style="left:48%"></div>
-    <div class="stall" style="left:64%"></div>
-    <div class="tree"  style="left:76%"></div>
-    <div class="house" style="left:82%"></div>
-    <div class="ripple" style="width:64px;left:10%;bottom:14%"></div>
-    <div class="ripple" style="width:44px;left:46%;bottom:7%;animation-delay:-2s"></div>
-    <div class="ripple" style="width:72px;left:70%;bottom:16%;animation-delay:-1s"></div>
-    <div class="fish" style="left:32%;bottom:4%">🐟</div>
-    <div class="fish" style="left:58%;bottom:10%;animation-delay:-1.5s">🦆</div>
-  </div>
+  <div class="explore" id="introScene"><span class="scene-tag">🏞️ 清溪镇 · 河畔大集</span></div>
 
   <div class="mentor">
     <div class="doc"></div>
@@ -471,118 +540,297 @@ tbody tr.row-reveal-bad td:nth-child(n+2){text-decoration:line-through}
   </div>
 
   <div class="explore">
-    <svg class="town-svg" viewBox="0 0 1000 500" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="skyg" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="#A8DFEF"/><stop offset="1" stop-color="#E9F8F2"/>
-        </linearGradient>
-        <linearGradient id="rvg" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="#8FDCEC"/><stop offset="1" stop-color="#5BBBD6"/>
-        </linearGradient>
-      </defs>
-      <rect width="1000" height="500" fill="url(#skyg)"/>
-      <!-- 太阳 -->
-      <circle cx="930" cy="64" r="34" fill="#FFD93D" stroke="#1B3A40" stroke-width="4"/>
-      <g stroke="#FFD93D" stroke-width="5" stroke-linecap="round">
-        <line x1="930" y1="10" x2="930" y2="22"/><line x1="884" y1="28" x2="893" y2="37"/><line x1="976" y1="28" x2="967" y2="37"/>
-      </g>
-      <!-- 云 -->
-      <g fill="#FFFFFF" stroke="#1B3A40" stroke-width="3.5">
-        <g class="sc1"><ellipse cx="180" cy="70" rx="46" ry="18"/><circle cx="158" cy="58" r="16"/><circle cx="196" cy="54" r="20"/></g>
-        <g class="sc2"><ellipse cx="640" cy="56" rx="38" ry="15"/><circle cx="624" cy="46" r="13"/><circle cx="654" cy="42" r="16"/></g>
-      </g>
-      <!-- 远山 -->
-      <path d="M0 250 Q120 140 250 245 Q330 180 440 250 L440 320 L0 320 Z" fill="#BBDCC8" opacity=".8"/>
-      <path d="M520 252 Q650 150 790 250 Q880 195 1000 255 L1000 320 L520 320 Z" fill="#BBDCC8" opacity=".65"/>
-      <!-- 左侧山丘 + 大坝 -->
-      <path d="M-20 330 Q90 150 260 320 L260 420 L-20 420 Z" fill="#8FCB7E" stroke="#1B3A40" stroke-width="4"/>
-      <g>
-        <rect x="28" y="180" width="120" height="120" rx="10" fill="#C8CBD4" stroke="#1B3A40" stroke-width="4"/>
-        <path d="M40 210h96M40 240h96M40 270h96M76 180v120M112 180v120" stroke="#9DA2B0" stroke-width="3"/>
-        <rect x="50" y="270" width="22" height="30" rx="8" fill="#3D6E8E" stroke="#1B3A40" stroke-width="3"/>
-        <rect x="104" y="270" width="22" height="30" rx="8" fill="#3D6E8E" stroke="#1B3A40" stroke-width="3"/>
-        <path d="M55 300 Q60 360 90 410 M115 300 Q118 360 140 410" stroke="#9FE0F0" stroke-width="13" stroke-linecap="round" fill="none" opacity=".9"/>
-        <text x="88" y="168" text-anchor="middle" font-size="17" font-weight="900" fill="#1B3A40">上游水库</text>
-      </g>
-      <!-- 草地 -->
-      <rect x="0" y="318" width="1000" height="112" fill="#A5D98A"/>
-      <path d="M0 318 H1000" stroke="#1B3A40" stroke-width="4"/>
-      <ellipse cx="380" cy="356" rx="26" ry="6" fill="#8FCB7E"/><ellipse cx="720" cy="350" rx="30" ry="7" fill="#8FCB7E"/>
-      <!-- 河流 -->
-      <rect x="0" y="408" width="1000" height="92" fill="url(#rvg)"/>
-      <path d="M0 408 H1000" stroke="#1B3A40" stroke-width="4"/>
-      <g stroke="#EAFBFF" stroke-width="4" stroke-linecap="round" fill="none" opacity=".85" class="waves">
-        <path d="M60 440 q14 -8 28 0 q14 8 28 0"/><path d="M320 462 q14 -8 28 0 q14 8 28 0"/>
-        <path d="M560 444 q14 -8 28 0 q14 8 28 0"/><path d="M820 466 q14 -8 28 0 q14 8 28 0"/>
-      </g>
-      <!-- 木桥 -->
-      <g stroke="#1B3A40" stroke-width="4">
-        <rect x="620" y="396" width="190" height="16" rx="8" fill="#C9935C"/>
-        <line x1="640" y1="412" x2="640" y2="470"/><line x1="715" y1="412" x2="715" y2="474"/><line x1="790" y1="412" x2="790" y2="470"/>
-        <path d="M620 396 Q715 366 810 396" fill="none" stroke-width="6"/>
-      </g>
-      <!-- 镇志馆（档案） -->
-      <g>
-        <rect x="520" y="232" width="150" height="96" rx="8" fill="#FFF4DC" stroke="#1B3A40" stroke-width="4"/>
-        <path d="M506 236 L595 178 L684 236 Z" fill="#E2574C" stroke="#1B3A40" stroke-width="4"/>
-        <rect x="576" y="276" width="38" height="52" rx="5" fill="#8A5A33" stroke="#1B3A40" stroke-width="3.5"/>
-        <rect x="534" y="252" width="28" height="24" rx="4" fill="#BDEAF5" stroke="#1B3A40" stroke-width="3"/>
-        <rect x="628" y="252" width="28" height="24" rx="4" fill="#BDEAF5" stroke="#1B3A40" stroke-width="3"/>
-        <text x="595" y="222" text-anchor="middle" font-size="16" font-weight="900" fill="#fff" stroke="#1B3A40" stroke-width=".5">镇志馆</text>
-      </g>
-      <!-- 民居 -->
-      <g>
-        <rect x="710" y="262" width="92" height="66" rx="7" fill="#FFFFFF" stroke="#1B3A40" stroke-width="4"/>
-        <path d="M700 266 L756 224 L812 266 Z" fill="#FF9F1C" stroke="#1B3A40" stroke-width="4"/>
-        <rect x="742" y="290" width="26" height="38" rx="4" fill="#3D6E8E" stroke="#1B3A40" stroke-width="3"/>
-      </g>
-      <!-- 集市摊位 ×2 -->
-      <g>
-        <rect x="252" y="332" width="104" height="14" rx="7" fill="#FFFFFF" stroke="#1B3A40" stroke-width="3.5"/>
-        <path d="M250 332 h108 l-9 -26 h-90 Z" fill="#FF7B6B" stroke="#1B3A40" stroke-width="3.5"/>
-        <path d="M268 306 v26 M290 306 v26 M312 306 v26 M334 306 v26" stroke="#FFD6CE" stroke-width="7"/>
-        <rect x="262" y="346" width="8" height="38" fill="#8A5A33" stroke="#1B3A40" stroke-width="3"/>
-        <rect x="338" y="346" width="8" height="38" fill="#8A5A33" stroke="#1B3A40" stroke-width="3"/>
-        <rect x="424" y="344" width="104" height="14" rx="7" fill="#FFFFFF" stroke="#1B3A40" stroke-width="3.5"/>
-        <path d="M422 344 h108 l-9 -26 h-90 Z" fill="#52C474" stroke="#1B3A40" stroke-width="3.5"/>
-        <path d="M440 318 v26 M462 318 v26 M484 318 v26 M506 318 v26" stroke="#D9F5DF" stroke-width="7"/>
-        <rect x="434" y="358" width="8" height="36" fill="#8A5A33" stroke="#1B3A40" stroke-width="3"/>
-        <rect x="510" y="358" width="8" height="36" fill="#8A5A33" stroke="#1B3A40" stroke-width="3"/>
-      </g>
-      <!-- 气象塔（雨量站） -->
-      <g>
-        <rect x="362" y="140" width="10" height="200" fill="#8A5A33" stroke="#1B3A40" stroke-width="3.5"/>
-        <rect x="318" y="128" width="98" height="14" rx="7" fill="#C9935C" stroke="#1B3A40" stroke-width="3.5"/>
-        <path d="M330 142 L352 180 M404 142 L382 180" stroke="#8A5A33" stroke-width="5"/>
-        <text x="367" y="118" text-anchor="middle" font-size="14" font-weight="900" fill="#1B3A40">气象塔</text>
-      </g>
-      <!-- 水位计立柱 -->
-      <g>
-        <rect x="150" y="368" width="14" height="100" rx="4" fill="#FFD93D" stroke="#1B3A40" stroke-width="3.5"/>
-        <path d="M153 384h8M153 400h8M153 416h8M153 432h8" stroke="#1B3A40" stroke-width="2.5"/>
-      </g>
-      <!-- 路牌（地形图） -->
-      <g>
-        <rect x="792" y="300 " width="9" height="78" fill="#8A5A33" stroke="#1B3A40" stroke-width="3"/>
-        <rect x="758" y="288" width="78" height="34" rx="6" fill="#FFF4DC" stroke="#1B3A40" stroke-width="3.5"/>
-      </g>
-      <!-- 村民 -->
-      <g>
-        <circle cx="900" cy="332" r="15" fill="#FFD6BF" stroke="#1B3A40" stroke-width="3.5"/>
-        <path d="M886 348 q14 -10 28 0 l4 30 h-36 Z" fill="#4FC3DC" stroke="#1B3A40" stroke-width="3.5"/>
-        <path d="M893 329 q7 6 14 0" stroke="#1B3A40" stroke-width="2.4" fill="none" stroke-linecap="round"/>
-        <circle cx="894" cy="326" r="1.9" fill="#1B3A40"/><circle cx="906" cy="326" r="1.9" fill="#1B3A40"/>
-      </g>
-      <!-- 大树 -->
-      <g>
-        <rect x="958" y="282" width="14" height="56" fill="#8A5A33" stroke="#1B3A40" stroke-width="3.5"/>
-        <circle cx="965" cy="252" r="40" fill="#52C474" stroke="#1B3A40" stroke-width="4"/>
-        <circle cx="938" cy="270" r="24" fill="#52C474" stroke="#1B3A40" stroke-width="4"/>
-      </g>
-      <!-- 鸭子小鱼 -->
-      <text x="500" y="478" font-size="22" class="bobf">🦆</text>
-      <text x="230" y="488" font-size="18" class="bobf2">🐟</text>
-    </svg>
+    <svg class="town-svg" viewBox="0 0 1000 560" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <linearGradient id="skyg" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#8ECBDD"/><stop offset=".55" stop-color="#C5E8E6"/><stop offset="1" stop-color="#F3FAEC"/>
+  </linearGradient>
+  <radialGradient id="sung" cx=".5" cy=".5" r=".5">
+    <stop offset="0" stop-color="#FFF3C2" stop-opacity=".95"/><stop offset=".55" stop-color="#FFEAA0" stop-opacity=".4"/><stop offset="1" stop-color="#FFEAA0" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="rvg" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#79CFE2"/><stop offset="1" stop-color="#3E9CBE"/>
+  </linearGradient>
+  <linearGradient id="trk" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#6E4527"/><stop offset=".45" stop-color="#8A5A38"/><stop offset=".8" stop-color="#A06F47"/><stop offset="1" stop-color="#8A5A38"/>
+  </linearGradient>
+  <linearGradient id="trkR" x1="1" y1="0" x2="0" y2="0">
+    <stop offset="0" stop-color="#6E4527"/><stop offset=".45" stop-color="#8A5A38"/><stop offset=".8" stop-color="#A06F47"/><stop offset="1" stop-color="#8A5A38"/>
+  </linearGradient>
+  <radialGradient id="vig" cx=".5" cy=".42" r=".75">
+    <stop offset=".62" stop-color="#173C42" stop-opacity="0"/><stop offset="1" stop-color="#173C42" stop-opacity=".22"/>
+  </radialGradient>
+</defs>
+
+<!-- 天空 / 太阳 -->
+<rect width="1000" height="560" fill="url(#skyg)"/>
+<circle cx="828" cy="92" r="150" fill="url(#sung)"/>
+<circle cx="828" cy="92" r="36" fill="#FFE27A"/><circle cx="828" cy="92" r="27" fill="#FFD23F"/>
+
+<!-- 云（柔和无描边） -->
+<g class="sc1" fill="#FFFFFF" opacity=".94">
+  <ellipse cx="200" cy="86" rx="62" ry="20"/><circle cx="172" cy="72" r="20"/><circle cx="216" cy="64" r="26"/><circle cx="246" cy="78" r="17"/>
+  <ellipse cx="206" cy="94" rx="56" ry="12" fill="#D8EEF2"/>
+</g>
+<g class="sc2" fill="#FFFFFF" opacity=".88">
+  <ellipse cx="600" cy="60" rx="46" ry="15"/><circle cx="580" cy="48" r="15"/><circle cx="612" cy="42" r="19"/>
+  <ellipse cx="604" cy="66" rx="40" ry="9" fill="#D8EEF2"/>
+</g>
+<g class="sc1" fill="#FFFFFF" opacity=".75">
+  <ellipse cx="430" cy="130" rx="34" ry="11"/><circle cx="418" cy="122" r="11"/><circle cx="442" cy="118" r="13"/>
+</g>
+
+<!-- 远山三层（大气透视） -->
+<path d="M-20 318 Q110 196 240 308 Q340 230 470 312 Q560 252 700 310 Q820 240 1020 314 L1020 360 L-20 360 Z" fill="#9DC6B4" opacity=".42"/>
+<path d="M-20 330 Q140 232 300 326 Q430 262 580 328 Q720 268 880 326 Q950 296 1020 326 L1020 372 L-20 372 Z" fill="#8CBBA2" opacity=".6"/>
+<rect x="0" y="300" width="1000" height="46" fill="#FFFFFF" opacity=".22"/>
+
+<!-- 中景丘陵 -->
+<path d="M-20 352 Q180 286 400 350 Q640 292 860 348 Q940 330 1020 348 L1020 420 L-20 420 Z" fill="#A8D584"/>
+<path d="M-20 352 Q180 286 400 350 Q640 292 860 348 Q940 330 1020 348" fill="none" stroke="#7FBE63" stroke-width="5" opacity=".55"/>
+
+<!-- 大坝小丘 + 水库 -->
+<path d="M96 352 Q210 252 336 352 Z" fill="#90C972"/>
+<path d="M120 340 Q210 268 312 340" fill="none" stroke="#7BB55C" stroke-width="6" opacity=".6"/>
+<g>
+  <rect x="158" y="252" width="98" height="100" rx="8" fill="#C9CDD6" stroke="#2A4A50" stroke-width="2.5"/>
+  <rect x="158" y="252" width="98" height="16" rx="8" fill="#DDE1E8"/>
+  <path d="M158 280h98M158 304h98M158 328h98" stroke="#A7ADBB" stroke-width="2.5"/>
+  <path d="M183 280v24M232 280v24M207 304v24M183 328v24M232 328v24" stroke="#A7ADBB" stroke-width="2.5"/>
+  <path d="M173 332q0-12 11-12t11 12v20h-22Z" fill="#3D7C9C" stroke="#2A4A50" stroke-width="2.5"/>
+  <path d="M221 332q0-12 11-12t11 12v20h-22Z" fill="#3D7C9C" stroke="#2A4A50" stroke-width="2.5"/>
+  <path d="M184 352 Q196 412 232 470" stroke="#A9E2F2" stroke-width="13" stroke-linecap="round" fill="none" opacity=".95"/>
+  <path d="M232 352 Q236 408 258 468" stroke="#C7EEF8" stroke-width="9" stroke-linecap="round" fill="none" opacity=".9"/>
+  <circle cx="236" cy="468" r="7" fill="#EAFBFF" opacity=".9"/><circle cx="256" cy="472" r="5" fill="#EAFBFF" opacity=".8"/>
+  <rect x="186" y="222" width="44" height="20" rx="5" fill="#FFF6DF" stroke="#2A4A50" stroke-width="2.5"/>
+  <text x="208" y="237" text-anchor="middle" font-size="12.5" font-weight="900" fill="#2A4A50">水库</text>
+  <line x1="208" y1="242" x2="208" y2="252" stroke="#2A4A50" stroke-width="2.5"/>
+</g>
+
+<!-- ══ 高空吊桥（左树 → 气象塔 → 右树） ══ -->
+<g stroke="#5C3A20" fill="none">
+  <path d="M96 168 Q250 218 352 196" stroke-width="7" stroke-linecap="round"/>
+  <path d="M96 150 Q250 198 352 178" stroke-width="3.4"/>
+  <path d="M128 156 v32 M168 165 v34 M210 172 v34 M252 176 v33 M294 176 v29 M330 172 v26" stroke-width="3"/>
+  <path d="M468 196 Q650 248 904 212" stroke-width="7" stroke-linecap="round"/>
+  <path d="M468 178 Q650 228 904 192" stroke-width="3.4"/>
+  <path d="M510 188 v32 M560 196 v33 M612 202 v34 M664 206 v34 M716 207 v33 M768 204 v31 M820 199 v28 M866 193 v26" stroke-width="3"/>
+</g>
+<g fill="#C9935C" stroke="#2A4A50" stroke-width="2">
+  <rect x="100" y="164" width="14" height="8" rx="2" transform="rotate(8 107 168)"/>
+  <rect x="146" y="176" width="14" height="8" rx="2" transform="rotate(7 153 180)"/>
+  <rect x="192" y="185" width="14" height="8" rx="2" transform="rotate(5 199 189)"/>
+  <rect x="238" y="190" width="14" height="8" rx="2" transform="rotate(2 245 194)"/>
+  <rect x="284" y="192" width="14" height="8" rx="2"/>
+  <rect x="324" y="190" width="14" height="8" rx="2" transform="rotate(-3 331 194)"/>
+  <rect x="492" y="196" width="15" height="8" rx="2" transform="rotate(6 499 200)"/>
+  <rect x="546" y="206" width="15" height="8" rx="2" transform="rotate(5 553 210)"/>
+  <rect x="600" y="214" width="15" height="8" rx="2" transform="rotate(3 607 218)"/>
+  <rect x="654" y="218" width="15" height="8" rx="2"/>
+  <rect x="708" y="219" width="15" height="8" rx="2" transform="rotate(-2 715 223)"/>
+  <rect x="762" y="216" width="15" height="8" rx="2" transform="rotate(-3 769 220)"/>
+  <rect x="816" y="210" width="15" height="8" rx="2" transform="rotate(-5 823 214)"/>
+  <rect x="862" y="203" width="15" height="8" rx="2" transform="rotate(-6 869 207)"/>
+</g>
+
+<!-- ══ 气象塔（黄铜仪器） ══ -->
+<g>
+  <rect x="402" y="216" width="14" height="148" fill="url(#trk)" stroke="#2A4A50" stroke-width="2.5"/>
+  <path d="M372 364 L406 300 M446 364 L412 300" stroke="#6E4527" stroke-width="6" stroke-linecap="round"/>
+  <rect x="352" y="200" width="116" height="16" rx="8" fill="#C9935C" stroke="#2A4A50" stroke-width="2.5"/>
+  <rect x="352" y="200" width="116" height="6" rx="3" fill="#E0B080"/>
+  <!-- 机器主体 -->
+  <rect x="380" y="112" width="58" height="90" rx="13" fill="#9AA6B4" stroke="#2A4A50" stroke-width="2.8"/>
+  <rect x="384" y="116" width="14" height="82" rx="7" fill="#B7C2CE" opacity=".8"/>
+  <circle cx="409" cy="142" r="25" fill="#C46A55" stroke="#2A4A50" stroke-width="2.8"/>
+  <circle cx="409" cy="142" r="18" fill="#FFF6DF" stroke="#2A4A50" stroke-width="2.2"/>
+  <line x1="409" y1="142" x2="409" y2="130" stroke="#2A4A50" stroke-width="2.6" stroke-linecap="round"/>
+  <line x1="409" y1="142" x2="417" y2="146" stroke="#2A4A50" stroke-width="2.2" stroke-linecap="round"/>
+  <circle cx="409" cy="142" r="2.4" fill="#2A4A50"/>
+  <circle cx="398" cy="182" r="9" fill="#FFF6DF" stroke="#2A4A50" stroke-width="2.2"/>
+  <line x1="398" y1="182" x2="402" y2="176" stroke="#2A4A50" stroke-width="2"/>
+  <rect x="421" y="172" width="11" height="18" rx="2.5" fill="#3E4A57" stroke="#2A4A50" stroke-width="1.8"/>
+  <circle cx="426.5" cy="177" r="1.6" fill="#8FE3A0"/><circle cx="426.5" cy="183" r="1.6" fill="#FFCF3F"/>
+  <!-- 管道与阀门 -->
+  <path d="M388 112 v-22 q0-9 9-9 h10" fill="none" stroke="#7E8A99" stroke-width="9" stroke-linecap="round"/>
+  <path d="M388 112 v-22 q0-9 9-9 h10" fill="none" stroke="#B7C2CE" stroke-width="3.5" stroke-linecap="round"/>
+  <circle cx="413" cy="81" r="8" fill="#C46A55" stroke="#2A4A50" stroke-width="2.4"/>
+  <rect x="409" y="70" width="8" height="8" rx="2" fill="#C46A55" stroke="#2A4A50" stroke-width="2"/>
+  <rect x="362" y="138" width="14" height="44" rx="7" fill="#DDE6EE" stroke="#2A4A50" stroke-width="2.4"/>
+  <rect x="365" y="146" width="8" height="22" rx="4" fill="#9FD9EC"/>
+  <path d="M376 150 h4 M376 168 h4" stroke="#2A4A50" stroke-width="2.2"/>
+  <path d="M438 132 h12 q7 0 7 8 v36" fill="none" stroke="#7E8A99" stroke-width="8" stroke-linecap="round"/>
+</g>
+
+<!-- 主草地 -->
+<path d="M-20 364 Q240 336 500 360 Q760 384 1020 356 L1020 470 L-20 470 Z" fill="#9FD480"/>
+<path d="M-20 364 Q240 336 500 360 Q760 384 1020 356" fill="none" stroke="#7FBE63" stroke-width="5" opacity=".7"/>
+<ellipse cx="350" cy="402" rx="42" ry="8" fill="#8BC56B" opacity=".7"/>
+<ellipse cx="700" cy="408" rx="48" ry="9" fill="#8BC56B" opacity=".7"/>
+<ellipse cx="540" cy="430" rx="36" ry="7" fill="#8BC56B" opacity=".6"/>
+
+<!-- ══ 镇志馆 ══ -->
+<g>
+  <ellipse cx="560" cy="352" rx="86" ry="9" fill="#7FBE63" opacity=".65"/>
+  <rect x="496" y="266" width="128" height="86" rx="7" fill="#FFF3D8" stroke="#2A4A50" stroke-width="2.8"/>
+  <rect x="496" y="266" width="128" height="10" fill="#F0DCB4"/>
+  <path d="M478 270 Q560 192 642 270 L626 270 Q560 208 494 270 Z" fill="#D8564A" stroke="#2A4A50" stroke-width="2.8"/>
+  <path d="M482 268 Q560 196 638 268" fill="none" stroke="#B23F36" stroke-width="7"/>
+  <rect x="544" y="300" width="34" height="52" rx="4" fill="#8A5A38" stroke="#2A4A50" stroke-width="2.6"/>
+  <path d="M548 304 q13 -8 26 0" fill="none" stroke="#6E4527" stroke-width="2"/>
+  <circle cx="572" cy="328" r="2.4" fill="#FFCF3F"/>
+  <rect x="508" y="288" width="26" height="22" rx="4" fill="#BCE6F2" stroke="#2A4A50" stroke-width="2.4"/>
+  <path d="M508 299 h26 M521 288 v22" stroke="#2A4A50" stroke-width="1.8"/>
+  <rect x="588" y="288" width="26" height="22" rx="4" fill="#BCE6F2" stroke="#2A4A50" stroke-width="2.4"/>
+  <path d="M588 299 h26 M601 288 v22" stroke="#2A4A50" stroke-width="1.8"/>
+  <line x1="630" y1="276" x2="630" y2="296" stroke="#2A4A50" stroke-width="2.2"/>
+  <ellipse cx="630" cy="304" rx="7.5" ry="9" fill="#E2574C" stroke="#2A4A50" stroke-width="2.2"/>
+  <path d="M630 313 v6" stroke="#FFCF3F" stroke-width="2.4"/>
+  <rect x="528" y="246" width="64" height="19" rx="5" fill="#FFF6DF" stroke="#2A4A50" stroke-width="2.4"/>
+  <text x="560" y="260" text-anchor="middle" font-size="13.5" font-weight="900" fill="#2A4A50">镇 志 馆</text>
+</g>
+
+<!-- 民居 -->
+<g>
+  <ellipse cx="724" cy="350" rx="56" ry="8" fill="#7FBE63" opacity=".6"/>
+  <rect x="682" y="288" width="84" height="62" rx="6" fill="#FFFDF6" stroke="#2A4A50" stroke-width="2.6"/>
+  <path d="M670 292 L724 246 L778 292 L764 292 L724 258 L684 292 Z" fill="#F2A03D" stroke="#2A4A50" stroke-width="2.6"/>
+  <rect x="712" y="314" width="24" height="36" rx="4" fill="#3D7C9C" stroke="#2A4A50" stroke-width="2.4"/>
+  <rect x="690" y="300" width="18" height="16" rx="3" fill="#BCE6F2" stroke="#2A4A50" stroke-width="2"/>
+</g>
+
+<!-- ══ 集市两摊 + 彩旗 ══ -->
+<path d="M300 296 Q368 318 436 300" fill="none" stroke="#6E4527" stroke-width="2.4"/>
+<g>
+  <path d="M306 308 l9 -5 v10 Z" fill="#FF7B6B"/><path d="M330 313 l9 -5 v10 Z" fill="#FFCF3F"/>
+  <path d="M354 316 l9 -5 v10 Z" fill="#52C474"/><path d="M378 315 l9 -5 v10 Z" fill="#4FC3DC"/>
+  <path d="M402 311 l9 -5 v10 Z" fill="#B388FF"/>
+</g>
+<g>
+  <ellipse cx="318" cy="392" rx="58" ry="8" fill="#7FBE63" opacity=".6"/>
+  <rect x="276" y="350" width="86" height="11" rx="5" fill="#FFFDF6" stroke="#2A4A50" stroke-width="2.4"/>
+  <path d="M272 350 h94 l-8 -24 h-78 Z" fill="#E2574C" stroke="#2A4A50" stroke-width="2.4"/>
+  <path d="M276 350 q5 7 10 0 q5 7 10 0 q5 7 10 0 q5 7 10 0 q5 7 10 0 q5 7 10 0 q5 7 10 0 q5 7 10 0 q4 7 8 0" fill="#E2574C" stroke="#2A4A50" stroke-width="2.2"/>
+  <path d="M288 328 v22 M306 328 v22 M324 328 v22 M342 328 v22" stroke="#FFD6CE" stroke-width="6"/>
+  <rect x="282" y="361" width="7" height="31" fill="#8A5A38" stroke="#2A4A50" stroke-width="2"/>
+  <rect x="349" y="361" width="7" height="31" fill="#8A5A38" stroke="#2A4A50" stroke-width="2"/>
+  <circle cx="300" cy="345" r="5" fill="#FF9F1C"/><circle cx="312" cy="345" r="5" fill="#FF9F1C"/><circle cx="306" cy="338" r="5" fill="#FFB94D"/>
+  <circle cx="334" cy="345" r="5" fill="#E2574C"/><circle cx="344" cy="345" r="5" fill="#E2574C"/>
+</g>
+<g>
+  <ellipse cx="438" cy="400" rx="56" ry="8" fill="#7FBE63" opacity=".6"/>
+  <rect x="396" y="360" width="86" height="11" rx="5" fill="#FFFDF6" stroke="#2A4A50" stroke-width="2.4"/>
+  <path d="M392 360 h94 l-8 -24 h-78 Z" fill="#3FA56F" stroke="#2A4A50" stroke-width="2.4"/>
+  <path d="M396 360 q5 7 10 0 q5 7 10 0 q5 7 10 0 q5 7 10 0 q5 7 10 0 q5 7 10 0 q5 7 10 0 q5 7 10 0 q4 7 8 0" fill="#3FA56F" stroke="#2A4A50" stroke-width="2.2"/>
+  <path d="M408 338 v22 M426 338 v22 M444 338 v22 M462 338 v22" stroke="#D9F5DF" stroke-width="6"/>
+  <rect x="402" y="371" width="7" height="31" fill="#8A5A38" stroke="#2A4A50" stroke-width="2"/>
+  <rect x="469" y="371" width="7" height="31" fill="#8A5A38" stroke="#2A4A50" stroke-width="2"/>
+  <rect x="414" y="346" width="22" height="14" rx="2.5" fill="#C9935C" stroke="#2A4A50" stroke-width="2"/>
+  <circle cx="450" cy="350" r="5.5" fill="#9BE08C"/><circle cx="461" cy="350" r="5.5" fill="#9BE08C"/>
+</g>
+
+<!-- 路牌 -->
+<g>
+  <ellipse cx="804" cy="360" rx="30" ry="6" fill="#7FBE63" opacity=".6"/>
+  <rect x="800" y="300" width="8" height="58" fill="#8A5A38" stroke="#2A4A50" stroke-width="2.2"/>
+  <rect x="768" y="286" width="72" height="32" rx="6" fill="#FFF3D8" stroke="#2A4A50" stroke-width="2.6"/>
+  <path d="M776 308 l12 -10 8 6 10 -9" fill="none" stroke="#3FA56F" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="826" cy="296" r="3" fill="#E2574C"/>
+</g>
+
+<!-- 村民 -->
+<g>
+  <ellipse cx="872" cy="368" rx="22" ry="5" fill="#7FBE63" opacity=".6"/>
+  <circle cx="872" cy="324" r="14" fill="#FFD9BF" stroke="#2A4A50" stroke-width="2.6"/>
+  <path d="M858 322 q3 -12 14 -12 t14 12" fill="#5C3A20" stroke="#2A4A50" stroke-width="2.2"/>
+  <path d="M859 340 q13 -9 26 0 l4 26 h-34 Z" fill="#4FC3DC" stroke="#2A4A50" stroke-width="2.6"/>
+  <path d="M866 328 q6 5 12 0" stroke="#2A4A50" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+  <circle cx="866" cy="322" r="1.8" fill="#2A4A50"/><circle cx="878" cy="322" r="1.8" fill="#2A4A50"/>
+  <ellipse cx="861" cy="327" rx="2.6" ry="1.6" fill="#FFB3A0"/><ellipse cx="883" cy="327" rx="2.6" ry="1.6" fill="#FFB3A0"/>
+</g>
+
+<!-- 河 -->
+<path d="M-20 470 Q250 452 520 466 Q780 478 1020 460 L1020 560 L-20 560 Z" fill="url(#rvg)"/>
+<path d="M-20 470 Q250 452 520 466 Q780 478 1020 460" fill="none" stroke="#2A4A50" stroke-width="3" opacity=".5"/>
+<ellipse cx="300" cy="500" rx="90" ry="7" fill="#A9E2F2" opacity=".5"/>
+<ellipse cx="640" cy="516" rx="110" ry="8" fill="#A9E2F2" opacity=".4"/>
+<ellipse cx="880" cy="496" rx="70" ry="6" fill="#A9E2F2" opacity=".45"/>
+<g stroke="#E6FAFF" stroke-width="3.6" stroke-linecap="round" fill="none" opacity=".9" class="waves">
+  <path d="M120 498 q12 -7 24 0 q12 7 24 0"/><path d="M420 512 q12 -7 24 0 q12 7 24 0"/>
+  <path d="M700 500 q12 -7 24 0 q12 7 24 0"/><path d="M900 520 q12 -7 24 0 q12 7 24 0"/>
+</g>
+<ellipse cx="560" cy="492" rx="13" ry="5" fill="#52A86C"/><circle cx="566" cy="487" r="4" fill="#FF8FB1"/>
+<g class="bobf"><text x="476" y="506" font-size="24">🦆</text><path d="M468 510 q-12 4 -22 1" stroke="#E6FAFF" stroke-width="2.5" fill="none" opacity=".8"/></g>
+<text x="208" y="540" font-size="19" class="bobf2">🐟</text>
+
+<!-- 水位计立柱 -->
+<g>
+  <rect x="142" y="418" width="16" height="116" rx="4" fill="#FFCF3F" stroke="#2A4A50" stroke-width="2.6"/>
+  <rect x="142" y="418" width="6" height="116" rx="3" fill="#FFE27A"/>
+  <path d="M146 436h8M146 454h8M146 472h8M146 490h8M146 508h8" stroke="#2A4A50" stroke-width="2.2"/>
+  <circle cx="150" cy="408" r="13" fill="#FFF6DF" stroke="#2A4A50" stroke-width="2.6"/>
+  <line x1="150" y1="408" x2="150" y2="399" stroke="#C0392B" stroke-width="2.4" stroke-linecap="round"/>
+  <circle cx="150" cy="408" r="2" fill="#2A4A50"/>
+  <ellipse cx="150" cy="534" rx="26" ry="6" fill="#2E7E9E" opacity=".5"/>
+</g>
+
+<!-- 拱桥 -->
+<g>
+  <path d="M620 470 Q716 428 812 472" fill="none" stroke="#6E4527" stroke-width="13"/>
+  <path d="M620 466 Q716 424 812 468" fill="none" stroke="#C9935C" stroke-width="7"/>
+  <path d="M624 452 Q716 412 808 454" fill="none" stroke="#8A5A38" stroke-width="5"/>
+  <path d="M646 446 v14 M686 434 v16 M726 430 v17 M766 436 v16 M798 446 v14" stroke="#8A5A38" stroke-width="4"/>
+</g>
+
+<!-- ══ 左右巨树（框景） ══ -->
+<g>
+  <path d="M-30 560 L-30 -20 L96 -20 Q78 90 88 200 Q96 320 78 440 Q72 510 84 560 Z" fill="url(#trk)" stroke="#2A4A50" stroke-width="3"/>
+  <path d="M30 -10 Q22 120 32 260 Q40 400 28 545" stroke="#6E4527" stroke-width="7" fill="none" opacity=".55"/>
+  <path d="M62 -10 Q56 140 66 300 Q72 430 60 552" stroke="#A06F47" stroke-width="5" fill="none" opacity=".6"/>
+  <ellipse cx="92" cy="236" rx="34" ry="13" fill="#F2C98E" stroke="#2A4A50" stroke-width="2.6"/>
+  <ellipse cx="92" cy="231" rx="34" ry="9" fill="#FBE3BC"/>
+  <ellipse cx="86" cy="356" rx="28" ry="11" fill="#F2C98E" stroke="#2A4A50" stroke-width="2.6"/>
+  <ellipse cx="86" cy="352" rx="28" ry="7.5" fill="#FBE3BC"/>
+  <ellipse cx="94" cy="470" rx="24" ry="10" fill="#E8B27A" stroke="#2A4A50" stroke-width="2.4"/>
+  <circle cx="58" cy="300" r="6" fill="#6E4527" opacity=".5"/><circle cx="44" cy="180" r="8" fill="#6E4527" opacity=".4"/>
+</g>
+<g>
+  <path d="M1030 560 L1030 -20 L906 -20 Q922 100 914 220 Q906 340 922 450 Q928 510 918 560 Z" fill="url(#trkR)" stroke="#2A4A50" stroke-width="3"/>
+  <path d="M972 -10 Q980 130 970 270 Q962 410 974 548" stroke="#6E4527" stroke-width="7" fill="none" opacity=".55"/>
+  <path d="M940 -10 Q946 150 938 310 Q932 440 944 554" stroke="#A06F47" stroke-width="5" fill="none" opacity=".6"/>
+  <ellipse cx="910" cy="260" rx="30" ry="12" fill="#F2C98E" stroke="#2A4A50" stroke-width="2.6"/>
+  <ellipse cx="910" cy="255" rx="30" ry="8" fill="#FBE3BC"/>
+  <ellipse cx="916" cy="404" rx="26" ry="10" fill="#E8B27A" stroke="#2A4A50" stroke-width="2.4"/>
+  <circle cx="962" cy="220" r="7" fill="#6E4527" opacity=".45"/>
+</g>
+<!-- 树冠 -->
+<g fill="#4E9E5F">
+  <circle cx="30" cy="22" r="74"/><circle cx="120" cy="0" r="66"/><circle cx="86" cy="58" r="46"/>
+  <circle cx="966" cy="14" r="76"/><circle cx="884" cy="-6" r="60"/><circle cx="918" cy="52" r="44"/>
+</g>
+<g fill="#63B574">
+  <circle cx="16" cy="6" r="52"/><circle cx="108" cy="-16" r="46"/><circle cx="950" cy="-4" r="54"/>
+</g>
+<g fill="#8FD49B" opacity=".85">
+  <circle cx="60" cy="14" r="20"/><circle cx="118" cy="22" r="15"/><circle cx="930" cy="26" r="18"/><circle cx="980" cy="40" r="13"/>
+</g>
+
+<!-- 前景草丛 / 石头 / 萤光 -->
+<g fill="#5FA862">
+  <path d="M-10 560 q14 -44 26 0 q12 -36 24 0 q12 -30 24 0 Z"/>
+  <path d="M926 560 q12 -40 24 0 q12 -34 24 0 q12 -28 22 0 Z"/>
+</g>
+<ellipse cx="380" cy="556" rx="34" ry="11" fill="#8FA6AD"/><ellipse cx="372" cy="550" rx="20" ry="8" fill="#AEC2C8"/>
+<g class="fireflies" fill="#FFF2A8">
+  <circle cx="250" cy="250" r="3.2" class="ff1"/><circle cx="660" cy="180" r="2.6" class="ff2"/>
+  <circle cx="760" cy="330" r="3" class="ff3"/><circle cx="330" cy="170" r="2.4" class="ff2"/>
+  <circle cx="540" cy="220" r="2.8" class="ff1"/><circle cx="120" cy="320" r="2.6" class="ff3"/>
+</g>
+<g stroke="#2A4A50" stroke-width="2.2" fill="none" opacity=".8">
+  <path d="M560 120 q7 -7 14 0 q7 -7 14 0"/><path d="M620 96 q6 -6 12 0 q6 -6 12 0"/>
+</g>
+<rect width="1000" height="560" fill="url(#vig)" pointer-events="none"/>
+</svg>
     <div class="hs-layer" id="hotspots"></div>
   </div>
 
@@ -696,8 +944,28 @@ tbody tr.row-reveal-bad td:nth-child(n+2){text-decoration:line-through}
 <!-- ════════ 结业 ════════ -->
 <section class="screen" id="s-end">
   <div class="badge-wrap">
-    <div class="badge">🏅</div>
-    <h1 id="endTitle">任务完成！</h1>
+    <div class="award">
+      <div class="award-rays"></div>
+      <svg class="award-medal" viewBox="0 0 220 262">
+        <defs>
+          <linearGradient id="goldg" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#FFDE6B"/><stop offset="1" stop-color="#F5B22A"/>
+          </linearGradient>
+        </defs>
+        <path d="M80 148 L58 244 L86 228 L104 250 L110 166 Z" fill="#E2574C" stroke="#1B3A40" stroke-width="4" stroke-linejoin="round"/>
+        <path d="M140 148 L162 244 L134 228 L116 250 L110 166 Z" fill="#C8423B" stroke="#1B3A40" stroke-width="4" stroke-linejoin="round"/>
+        <path d="M86 160 L74 218 M134 160 L146 218" stroke="#9E332D" stroke-width="3" opacity=".6"/>
+        <g fill="#F5B22A" stroke="#1B3A40" stroke-width="4"><circle cx="168.0" cy="104.0" r="23"/><circle cx="160.2" cy="133.0" r="23"/><circle cx="139.0" cy="154.2" r="23"/><circle cx="110.0" cy="162.0" r="23"/><circle cx="81.0" cy="154.2" r="23"/><circle cx="59.8" cy="133.0" r="23"/><circle cx="52.0" cy="104.0" r="23"/><circle cx="59.8" cy="75.0" r="23"/><circle cx="81.0" cy="53.8" r="23"/><circle cx="110.0" cy="46.0" r="23"/><circle cx="139.0" cy="53.8" r="23"/><circle cx="160.2" cy="75.0" r="23"/></g>
+        <circle cx="110" cy="104" r="66" fill="url(#goldg)" stroke="#1B3A40" stroke-width="4"/>
+        <circle cx="110" cy="104" r="49" fill="#FFF6D8" stroke="#1B3A40" stroke-width="3.5"/>
+        <circle cx="110" cy="104" r="41" fill="none" stroke="#E8B23A" stroke-width="2.6" stroke-dasharray="5 7"/>
+        <path d="M110.0,73.0 L117.9,93.1 L139.5,94.4 L122.8,108.2 L128.2,129.1 L110.0,117.5 L91.8,129.1 L97.2,108.2 L80.5,94.4 L102.1,93.1 Z" fill="#FFC93A" stroke="#1B3A40" stroke-width="3.5" stroke-linejoin="round"/>
+        <path d="M101 92 L108 85" stroke="#FFF" stroke-width="4" stroke-linecap="round" opacity=".85"/>
+        <ellipse cx="84" cy="70" rx="13" ry="7" fill="#FFFFFF" opacity=".55" transform="rotate(-32 84 70)"/>
+      </svg>
+      <span class="aspark a1">✦</span><span class="aspark a2">✦</span><span class="aspark a3">✦</span><span class="aspark a4">✦</span>
+    </div>
+    <div class="ribbon"><h1 id="endTitle">任务完成！</h1></div>
     <p class="sub" id="endSub">你获得了「清溪镇荣誉洪水预报员」徽章</p>
     <div class="stars" id="endStars"></div>
     <div class="score-line" id="endScore"></div>
@@ -975,6 +1243,14 @@ return `<svg viewBox="0 0 120 130" xmlns="http://www.w3.org/2000/svg" aria-label
 document.addEventListener('DOMContentLoaded',()=>{
   const dm=document.getElementById('dataModal');
   if(dm) document.body.appendChild(dm);   /* 逃出 section 层叠上下文，全屏覆盖 */
+  const town=document.querySelector('#s-collect .town-svg');
+  if(town && $('introScene')){
+    const clone=town.cloneNode(true);
+    /* 克隆体重命名渐变ID，避免与关卡页冲突（隐藏页里的defs会让可见页渐变失效） */
+    clone.querySelectorAll('[id]').forEach(el=>el.id+='_i');
+    clone.innerHTML=clone.innerHTML.replace(/url\(#([A-Za-z]\w*)\)/g,'url(#$1_i)');
+    $('introScene').appendChild(clone);
+  }
   document.querySelectorAll('.doc').forEach(d=>d.innerHTML=docSVG());
   if(!sndOn){ $('btnSnd').classList.add('off'); $('btnSnd').textContent='🔇'; }
   if(!voiceOn) $('btnVoice').classList.add('off');
@@ -1204,11 +1480,17 @@ function startGame(){
     [CARDS[i],CARDS[j]]=[CARDS[j],CARDS[i]];
   }
   ROWS=CUR.rows;
+  const FEAT_EMOJI={knee:'🦵',phone:'📱',tanghulu:'🍡',dream:'💭',firecracker:'🧨',lottery:'🎱',fortune:'🔮',icepop:'🍦',dance:'💃'};
   FEATURES=[
     {name:'🌧️ 降雨量',good:true},{name:'📏 河水位',good:true},{name:'🗺️ 地形高度',good:true},
     {name:'🏞️ 上游放水',good:true},{name:'📜 历史洪水规律',good:true},
-    ...CUR.decoys.map(d=>({name:'❓ '+d.name,good:false}))
+    ...CUR.decoys.map(d=>({name:(FEAT_EMOJI[d.icon]||'📊')+' '+d.name,good:false}))
   ];
+  /* 打乱特征顺序，避免答案位置泄露 */
+  for(let i=FEATURES.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [FEATURES[i],FEATURES[j]]=[FEATURES[j],FEATURES[i]];
+  }
   DAYS=CUR.days;
   renderCards(); renderRows(); renderChips(); renderDays();
   const chip=$('playerChip');
@@ -1222,8 +1504,8 @@ function escapeHtml(s){return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','
 /* ═══════════ 关卡一：收集数据（满分 30） ═══════════ */
 let collectLocked=false;
 /* 场景锚点：好数据按身份固定位置，干扰项放进集市/村民三个点位 */
-const GOOD_POS={ rain:[36.7,17], gauge:[15.7,77], dam:[8.8,55], map:[79.7,60.5], scroll:[59.5,55] };
-const DECOY_POS=[[30.3,59],[47.6,61.5],[90,66]];
+const GOOD_POS={ rain:[40.9,28], gauge:[15,73], dam:[20.7,53.5], map:[80.4,54], scroll:[56,58] };
+const DECOY_POS=[[31.8,61],[43.9,63],[87.2,59]];
 let picked=[], explored=[], curData=-1;
 
 function renderCards(){
@@ -1234,9 +1516,10 @@ function renderCards(){
   $('hotspots').innerHTML = CARDS.map((d,i)=>{
     const pos = GOOD_POS[d.icon] || DECOY_POS[dIdx++];
     return `<div class="hs" id="hs${i}" style="left:${pos[0]}%;top:${pos[1]}%" onclick="openData(${i})" title="点击查看">
-      <span class="hs-ring"></span>
+      <span class="hs-glow"></span><span class="hs-halo"></span>
+      <svg class="hs-star" viewBox="0 0 40 40"><path d="M20 1 C22.5 13 27 17.5 39 20 C27 22.5 22.5 27 20 39 C17.5 27 13 22.5 1 20 C13 17.5 17.5 13 20 1 Z" fill="#fff"/></svg>
+      <svg class="hs-star hs-star2" viewBox="0 0 40 40"><path d="M20 1 C22.5 13 27 17.5 39 20 C27 22.5 22.5 27 20 39 C17.5 27 13 22.5 1 20 C13 17.5 17.5 13 20 1 Z" fill="#fff"/></svg>
       <div class="hs-badge" style="background:${d.bg}">${ICONS[d.icon]}</div>
-      <span class="hs-spark">✨</span>
     </div>`;
   }).join('');
   $('collectResults').style.display='none';
