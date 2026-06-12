@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>让孩子真正"看见 AI" · 洪水预报员开发手记</title>
+<style>
+:root {
+  --ink: #1B3A40;
+  --sky: #BDE9FF;
+  --paper: #FFFFFF;
+  --candy: #FF9F1C;
+  --coral: #FF7B6B;
+  --water: #4FC3DC;
+  --water-deep: #2A9DB5;
+  --good: #52C474;
+  --sun: #FFD23F;
+  --purple: #B388FF;
+  --cream: #FFF6E3;
+  --mist: #F1F8FB;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { overflow-x: hidden; }
+body {
+  font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  background: linear-gradient(180deg, #BDE9FF 0%, #E8F8FF 45%, #FFF8E7 100%);
+  color: var(--ink);
+  line-height: 1.75;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* 顶部装饰条 */
+.topstripe {
+  height: 8px;
+  background: linear-gradient(90deg, #FBBF24, #F97316, #EF4444, #4FC3DC, #52C474);
+  border-bottom: 3px solid var(--ink);
+}
+
+/* 主容器 */
+main {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px 20px 80px;
+}
+
+/* HERO */
+.hero {
+  background: linear-gradient(180deg, #FFFFFF, #FFF8E7);
+  border: 4px solid var(--ink);
+  border-radius: 30px;
+  padding: 36px 32px;
+  box-shadow: 0 10px 0 var(--ink), 0 20px 40px rgba(23, 85, 91, 0.18);
+  text-align: center;
+  margin-bottom: 40px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: ""; position: absolute; right: -30px; top: -30px;
+  width: 140px; height: 140px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,200,50,.35), transparent);
+}
+.kicker {
+  display: inline-block;
+  background: var(--sun);
+  color: var(--ink);
+  border: 3px solid var(--ink);
+  border-radius: 999px;
+  padding: 4px 18px;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  box-shadow: 0 3px 0 var(--ink);
+  margin-bottom: 18px;
+}
+.hero h1 {
+  font-size: 36px;
+  font-weight: 900;
+  line-height: 1.3;
+  letter-spacing: -0.5px;
+  margin-bottom: 12px;
+  position: relative; z-index: 1;
+}
+.hero h1 .hl {
+  background: linear-gradient(180deg, transparent 70%, rgba(255,210,63,0.6) 70%);
+  padding: 0 4px;
+}
+.hero .lead {
+  font-size: 16px;
+  color: #3A5560;
+  font-weight: 600;
+  margin-bottom: 26px;
+}
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(180deg, #FFD964, #FFB30F);
+  color: var(--ink);
+  border: 4px solid var(--ink);
+  border-radius: 999px;
+  padding: 14px 32px;
+  font-size: 17px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-decoration: none;
+  box-shadow: 0 6px 0 #B97E00, 0 12px 22px rgba(23, 85, 91, 0.22);
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+.cta:hover { transform: translateY(-2px); box-shadow: 0 8px 0 #B97E00, 0 16px 26px rgba(23, 85, 91, 0.28); }
+.cta:active { transform: translateY(4px); box-shadow: 0 2px 0 #B97E00; }
+.cta-row { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; }
+.cta.secondary { background: #fff; color: var(--water-deep); box-shadow: 0 6px 0 #5b7a99, 0 12px 22px rgba(23, 85, 91, 0.15); }
+
+/* 各章节 */
+section.chapter {
+  background: var(--paper);
+  border: 4px solid var(--ink);
+  border-radius: 24px;
+  padding: 32px 30px;
+  margin-bottom: 28px;
+  box-shadow: 0 8px 0 var(--ink), 0 16px 30px rgba(23, 85, 91, 0.12);
+  position: relative;
+}
+section.chapter::before {
+  content: attr(data-num);
+  position: absolute;
+  top: -22px; left: 24px;
+  width: 48px; height: 48px;
+  background: var(--sun);
+  border: 4px solid var(--ink);
+  border-radius: 50%;
+  font-size: 22px;
+  font-weight: 900;
+  display: grid; place-items: center;
+  box-shadow: 0 4px 0 var(--ink);
+  color: var(--ink);
+}
+section.chapter[data-color="coral"]::before { background: var(--coral); color: #fff; }
+section.chapter[data-color="water"]::before { background: var(--water); color: #fff; }
+section.chapter[data-color="good"]::before { background: var(--good); color: #fff; }
+section.chapter[data-color="purple"]::before { background: var(--purple); color: #fff; }
+section.chapter[data-color="candy"]::before { background: var(--candy); color: #fff; }
+
+section.chapter h2 {
+  font-size: 24px;
+  font-weight: 900;
+  margin-bottom: 16px;
+  margin-top: 8px;
+  letter-spacing: -0.3px;
+  display: flex; align-items: center; gap: 10px;
+}
+section.chapter h2 .ic { font-size: 28px; }
+section.chapter p {
+  font-size: 15.5px;
+  color: #2C3550;
+  margin-bottom: 14px;
+}
+section.chapter p:last-child { margin-bottom: 0; }
+section.chapter b {
+  background: linear-gradient(180deg, transparent 70%, rgba(255,210,63,0.5) 70%);
+  font-weight: 900;
+  padding: 0 2px;
+}
+
+/* 引文 */
+.quote {
+  background: var(--mist);
+  border-left: 6px solid var(--water);
+  border-radius: 14px;
+  padding: 14px 18px;
+  font-style: italic;
+  color: #3A5560;
+  margin: 16px 0;
+  font-size: 14.5px;
+}
+.quote::before { content: "👦 "; }
+
+/* 关卡表 */
+.levels {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin: 16px 0 4px;
+}
+.level {
+  display: grid;
+  grid-template-columns: 60px 1fr;
+  gap: 14px;
+  background: #FFFDF6;
+  border: 3px solid var(--ink);
+  border-radius: 16px;
+  padding: 12px 14px;
+  box-shadow: 0 4px 0 var(--ink);
+}
+.level .badge {
+  width: 50px; height: 50px;
+  border-radius: 50%;
+  background: var(--cream);
+  border: 3px solid var(--ink);
+  display: grid; place-items: center;
+  font-size: 24px;
+  box-shadow: 0 3px 0 var(--ink);
+}
+.level .info { font-size: 14.5px; }
+.level .info strong { display: block; font-size: 16px; margin-bottom: 4px; }
+.level .info .concept {
+  display: inline-block;
+  background: #E2F8E9; color: #1d7a40;
+  border: 2px solid var(--ink); border-radius: 999px;
+  padding: 2px 10px; font-size: 12px; font-weight: 900;
+  margin-bottom: 4px;
+}
+.level:nth-child(1) .badge { background: #FFF1C7; }
+.level:nth-child(2) .badge { background: #DCEEFF; }
+.level:nth-child(3) .badge { background: #E2F8E9; }
+.level:nth-child(4) .badge { background: #FFDFD9; }
+
+/* 认知锚点 */
+.anchors {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  background: #FFF6E3;
+  border: 3px dashed var(--candy);
+  border-radius: 18px;
+  padding: 16px 18px;
+  margin-top: 18px;
+}
+.anchors .label {
+  font-size: 13px; font-weight: 900;
+  color: #9c6b00; letter-spacing: 2px;
+  margin-bottom: 4px;
+}
+.anchor {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: 14.5px;
+}
+.anchor .ic { font-size: 18px; flex: 0 0 auto; line-height: 1.5; }
+
+/* 链接列表 */
+.links {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin-top: 6px;
+}
+.link {
+  display: flex; align-items: center; gap: 12px;
+  background: #FFFDF6;
+  border: 3px solid var(--ink);
+  border-radius: 14px;
+  padding: 12px 14px;
+  text-decoration: none;
+  color: var(--ink);
+  box-shadow: 0 4px 0 var(--ink);
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+.link:hover { transform: translateY(-2px); box-shadow: 0 6px 0 var(--ink); }
+.link .ic { font-size: 24px; flex: 0 0 auto; }
+.link .main { font-weight: 900; font-size: 15px; }
+.link .sub  { font-size: 12.5px; color: var(--water-deep); font-weight: 700; word-break: break-all; }
+
+/* 亮点 */
+.highlights {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 14px;
+}
+.hl-card {
+  background: #fff;
+  border: 3px solid var(--ink);
+  border-radius: 14px;
+  padding: 12px;
+  font-size: 13.5px;
+  box-shadow: 0 3px 0 var(--ink);
+}
+.hl-card .ic { font-size: 22px; margin-bottom: 4px; display: block; }
+.hl-card b { background: none; padding: 0; }
+
+/* 后续规划列表 */
+.roadmap {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-top: 8px;
+}
+.road {
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  gap: 12px;
+  align-items: start;
+  background: #fff;
+  border: 3px solid var(--ink);
+  border-radius: 14px;
+  padding: 12px 14px;
+  box-shadow: 0 3px 0 var(--ink);
+}
+.road .num {
+  width: 32px; height: 32px;
+  background: var(--purple); color: #fff;
+  border: 3px solid var(--ink); border-radius: 50%;
+  display: grid; place-items: center;
+  font-weight: 900; font-size: 15px;
+}
+.road .txt { font-size: 14.5px; padding-top: 2px; }
+.road .txt strong { display: block; margin-bottom: 2px; font-size: 15.5px; }
+
+/* 结语 */
+.outro {
+  background: linear-gradient(180deg, #FFE48A, #FFD23F);
+  border: 4px solid var(--ink);
+  border-radius: 24px;
+  padding: 28px 26px;
+  text-align: center;
+  box-shadow: 0 8px 0 var(--ink), 0 16px 28px rgba(255, 180, 50, 0.4);
+  margin-top: 32px;
+}
+.outro .creed {
+  font-size: 18px;
+  font-weight: 900;
+  margin-bottom: 8px;
+  font-style: italic;
+}
+.outro .url {
+  font-size: 14px;
+  font-weight: 800;
+  word-break: break-all;
+  margin-top: 14px;
+}
+.outro .url a { color: var(--ink); text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+
+/* 页脚 */
+footer {
+  text-align: center;
+  font-size: 13px;
+  color: #5b7a99;
+  font-weight: 600;
+  margin-top: 32px;
+}
+
+/* 响应式 */
+@media (max-width: 600px) {
+  main { padding: 28px 14px 60px; }
+  .hero { padding: 28px 22px; }
+  .hero h1 { font-size: 28px; }
+  section.chapter { padding: 28px 22px; }
+  section.chapter h2 { font-size: 20px; }
+  .highlights { grid-template-columns: 1fr; }
+  .level { grid-template-columns: 1fr; }
+  .level .badge { width: 44px; height: 44px; font-size: 22px; }
+  .cta { font-size: 16px; padding: 12px 26px; }
+}
+</style>
+</head>
+<body>
+
+<div class="topstripe"></div>
+
+<main>
+
+  <!-- HERO -->
+  <section class="hero">
+    <span class="kicker">🌊 开发手记</span>
+    <h1>让孩子真正<span class="hl">"看见 AI"</span><br>一款给小学生玩的 AI 科普游戏</h1>
+    <p class="lead">家中孩子四年级，常常问"AI 到底是怎么知道答案的？"<br>专业术语听不懂，于是我用游戏告诉他答案。</p>
+    <div class="cta-row">
+      <a class="cta" href="https://brucegu17.github.io/raincheck/" target="_blank">🎮 在线试玩</a>
+      <a class="cta secondary" href="https://github.com/brucegu17/raincheck" target="_blank">📂 看源代码</a>
+    </div>
+  </section>
+
+  <!-- 1. 开发初衷 -->
+  <section class="chapter" data-num="1" data-color="coral">
+    <h2><span class="ic">🌱</span>开发初衷与意义</h2>
+    <p>孩子今年小学四年级，最近常常缠着我问：</p>
+    <div class="quote">"AI 是怎么知道答案的？""它真的会思考吗？""为什么有时候它说得不对？"</div>
+    <p>我试着用大人的语言解释——什么是数据、什么是模型、什么是训练……结果换来的是越听越糊涂的眼神。专业术语对低龄儿童而言天然是一堵墙；而把 AI 简单总结成"它就是一个聪明的机器人"，又会错失让孩子建立<b>正确直觉</b>的关键时机。</p>
+    <p>于是我决定换一种方式：<b>做一款互动游戏</b>，让孩子在 8–10 分钟内<b>亲手走完一遍 AI 的工作全流程</b>，把抽象概念变成可以点击、可以试错、可以拿到反馈的真实体验。</p>
+    <p>让孩子不只是"听说过 AI"，而是<b>真正看见 AI 是怎么一步步从数据里学到东西的</b>，并且懂得——<b>最后拍板的，永远是人</b>。</p>
+  </section>
+
+  <!-- 2. 游戏内容 -->
+  <section class="chapter" data-num="2" data-color="water">
+    <h2><span class="ic">🎮</span>游戏核心内容：清溪镇保卫战</h2>
+    <p>游戏把孩子放进虚构的<b>"清溪镇"</b>，让他扮演一位 <b>洪水预报员</b>，用 AI 保护河畔大集免遭洪灾。完整还原 AI 工程师真实工作流程的四个关键环节：</p>
+
+    <div class="levels">
+      <div class="level">
+        <div class="badge">🔍</div>
+        <div class="info">
+          <strong>① 收集数据</strong>
+          <span class="concept">数据采集 · 相关性</span>
+          <div>在小镇地图上探索 8 个数据点，判断哪些跟洪水有关（雨量 ✅ / 糖葫芦销量 ❌）</div>
+        </div>
+      </div>
+      <div class="level">
+        <div class="badge">🧹</div>
+        <div class="info">
+          <strong>② 清洗数据</strong>
+          <span class="concept">异常值 · 缺失值 · 重复</span>
+          <div>当"数据侦探"，找出 4 行问题数据：缺失、超大异常、负数、重复记录</div>
+        </div>
+      </div>
+      <div class="level">
+        <div class="badge">🧠</div>
+        <div class="info">
+          <strong>③ 训练模型</strong>
+          <span class="concept">特征选择 · 训练 vs 测试 · 准确率</span>
+          <div>挑选相关特征喂给模型，80% 训练 / 20% 考试，达到 85% 才能上岗</div>
+        </div>
+      </div>
+      <div class="level">
+        <div class="badge">🎯</div>
+        <div class="info">
+          <strong>④ 预测决策</strong>
+          <span class="concept">概率 vs 确定性 · 人类判断</span>
+          <div>AI 给出三天洪水概率，孩子在"发预警 vs 不发"之间权衡风险</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="anchors">
+      <div class="label">💡 埋了三个反复强调的认知锚点</div>
+      <div class="anchor"><span class="ic">📦</span><div><b>数据决定模型的上限</b>：垃圾数据进，垃圾预测出</div></div>
+      <div class="anchor"><span class="ic">🎲</span><div><b>AI 给的是概率，不是答案</b>：50% 时连 AI 自己都"拿不准"</div></div>
+      <div class="anchor"><span class="ic">👤</span><div><b>责任在人</b>：预警发不发，永远是人在拍板</div></div>
+    </div>
+  </section>
+
+  <!-- 3. 开发过程 -->
+  <section class="chapter" data-num="3" data-color="purple">
+    <h2><span class="ic">🛠️</span>开发过程：从"能跑"到"能教"</h2>
+    <p><b>第一版</b>：用最朴素的单个 HTML 文件起手，CSS / JS / SVG 全堆在一起。能跑，但界面粗糙、改一处崩一片，孩子看了直摇头。</p>
+    <p><b>第二版</b>：意识到单文件已到达可维护性极限，<b>全面重构</b>为现代工程：Vue 3 + Vite + TypeScript + Pinia 状态管理，引入设计系统（design tokens、布局基元）和组件化场景。仍然用 <code>vite-plugin-singlefile</code> 把构建产物压成<b>单个 HTML</b>，保留"双击离线可玩"的课堂分发场景。</p>
+    <p><b>全程协作工具</b>：整个项目从架构设计、组件编写、UI 调优、bug 修复到部署上线，<b>100% 通过 Claude Code 完成</b>。这本身也是一次有意思的实验——让 AI 帮我们做一款讲 AI 的游戏。</p>
+    <p>过程中也踩过不少坑——比如最初让 AI 凭文字描述写 UI，结果反复"傻大粗"；后来给它装上浏览器自检能力，让它<b>自己截图自己看效果</b>，问题才大幅减少。这些经验都沉淀成了项目里的 UI 自检清单。</p>
+  </section>
+
+  <!-- 4. 成果分享 -->
+  <section class="chapter" data-num="4" data-color="good">
+    <h2><span class="ic">🚀</span>成果与分享</h2>
+    <p>项目已经完全开放，源代码 / 开发历程 / 版本迭代记录全部公开：</p>
+
+    <div class="links">
+      <a class="link" href="https://brucegu17.github.io/raincheck/" target="_blank">
+        <span class="ic">🎮</span>
+        <div>
+          <div class="main">在线试玩</div>
+          <div class="sub">https://brucegu17.github.io/raincheck/</div>
+        </div>
+      </a>
+      <a class="link" href="https://github.com/brucegu17/raincheck" target="_blank">
+        <span class="ic">📂</span>
+        <div>
+          <div class="main">GitHub 源代码 + 版本迭代</div>
+          <div class="sub">https://github.com/brucegu17/raincheck</div>
+        </div>
+      </a>
+      <div class="link" style="cursor:default">
+        <span class="ic">💾</span>
+        <div>
+          <div class="main">离线分发</div>
+          <div class="sub">构建一份 240KB 单文件 HTML，发给老师双击即可运行，无需联网、无需安装</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="highlights">
+      <div class="hl-card">
+        <span class="ic">🎲</span>
+        <b>三套题集</b>随机抽取，相邻两次必不重复——适合一节连堂课
+      </div>
+      <div class="hl-card">
+        <span class="ic">📡</span>
+        <b>零外部资源</b>：插画 / 音效 / 字体 / 文字全部内联，离线完整可玩
+      </div>
+      <div class="hl-card">
+        <span class="ic">🗣️</span>
+        <b>云博士语音</b>：浏览器原生中文 TTS，孩子识字不多也能玩
+      </div>
+      <div class="hl-card">
+        <span class="ic">♿</span>
+        <b>动画敏感友好</b>：支持 prefers-reduced-motion 自动减弱效果
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. 后续规划 -->
+  <section class="chapter" data-num="5" data-color="candy">
+    <h2><span class="ic">🌈</span>后续规划</h2>
+    <p>第一版只是起点。接下来想做的事情：</p>
+
+    <div class="roadmap">
+      <div class="road">
+        <div class="num">1</div>
+        <div class="txt">
+          <strong>持续根据反馈迭代</strong>
+          孩子和老师的反应是最诚实的产品经理
+        </div>
+      </div>
+      <div class="road">
+        <div class="num">2</div>
+        <div class="txt">
+          <strong>扩展更多 AI 主题</strong>
+          除了"预测概率"，还有图像识别、推荐系统、生成式 AI，都可以用同样的游戏化体验做
+        </div>
+      </div>
+      <div class="road">
+        <div class="num">3</div>
+        <div class="txt">
+          <strong>联网课堂版</strong>
+          老师能在大屏看全班实时排行榜，技术方案已经设计好，看反馈再决定何时启动
+        </div>
+      </div>
+      <div class="road">
+        <div class="num">4</div>
+        <div class="txt">
+          <strong>多语言版本</strong>
+          让世界各地的孩子都能玩
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 结语 -->
+  <div class="outro">
+    <div class="creed">用游戏让孩子主动靠近 AI，<br>而不是让 AI 变成又一门要被"灌输"的知识。</div>
+    <div class="url">🌊 <a href="https://brucegu17.github.io/raincheck/" target="_blank">brucegu17.github.io/raincheck</a><br>欢迎你的孩子来当一日预报员</div>
+  </div>
+
+  <footer>
+    © 2026 · 由家长 + Claude Code 共同打造 · MIT License
+  </footer>
+
+</main>
+
+</body>
+</html>
