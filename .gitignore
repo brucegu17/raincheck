@@ -1,0 +1,5 @@
+# 测试截图与临时文件
+shots/
+*.tmp
+.DS_Store
+Thumbs.db
