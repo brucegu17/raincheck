@@ -294,6 +294,96 @@ tbody tr.row-reveal-bad td:nth-child(n+2){text-decoration:line-through}
 .route-strip .rt:nth-child(5) span{background:#E7E3FF}
 .route-strip .rt:nth-child(7) span{background:#FFE3DC}
 
+
+/* ═════ 探索场景（关卡一）═════ */
+.explore{position:relative;border:3.5px solid var(--ink);border-radius:22px;overflow:hidden;
+  box-shadow:0 7px 0 var(--ink);margin:6px 0 14px;background:#A8DFEF}
+.town-svg{display:block;width:100%;height:auto}
+.sc1{animation:scd 36s linear infinite}.sc2{animation:scd 48s linear infinite reverse}
+@keyframes scd{from{transform:translateX(-60px)}to{transform:translateX(120px)}}
+.bobf{animation:bob 2.6s ease-in-out infinite}.bobf2{animation:bob 3.2s ease-in-out infinite reverse}
+.hs-layer{position:absolute;inset:0}
+.hs{position:absolute;width:62px;height:62px;transform:translate(-50%,-50%);cursor:pointer;z-index:5}
+.hs .hs-badge{width:100%;height:100%;border-radius:50%;border:3.5px solid var(--ink);
+  background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;
+  box-shadow:0 4px 0 rgba(27,58,64,.35);transition:.18s;position:relative;z-index:2}
+.hs .hs-badge svg{width:78%;height:78%}
+.hs:hover .hs-badge{transform:scale(1.16) rotate(-5deg)}
+.hs .hs-ring{position:absolute;inset:-7px;border-radius:50%;border:3.5px solid #FFD93D;
+  animation:hsping 1.5s ease-out infinite;z-index:1}
+@keyframes hsping{0%{transform:scale(.75);opacity:1}80%{transform:scale(1.35);opacity:0}100%{opacity:0}}
+.hs .hs-spark{position:absolute;top:-13px;right:-9px;font-size:17px;z-index:3;
+  animation:sparkle 1.2s ease-in-out infinite}
+@keyframes sparkle{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.45);opacity:.65}}
+.hs.found .hs-ring,.hs.found .hs-spark{display:none}
+.hs.found .hs-badge{opacity:.62;filter:saturate(.6)}
+.hs.taken .hs-badge{opacity:1;filter:none;border-color:var(--good);box-shadow:0 0 0 4px rgba(63,165,111,.3),0 4px 0 rgba(27,58,64,.35)}
+.hs.taken::after{content:"🎒";position:absolute;bottom:-7px;right:-7px;font-size:17px;z-index:4}
+.hs.is-good .hs-badge{border-color:var(--good)}
+.hs.is-bad .hs-badge{border-color:var(--flood);opacity:.5;transform:rotate(-8deg)}
+
+/* ═════ 底部数据槽（? 进度条）═════ */
+.dock-wrap{display:flex;justify-content:center;margin:0 0 16px}
+.dock{display:flex;gap:7px;background:#fff;border:3.5px solid var(--ink);border-radius:99px;
+  padding:9px 14px;box-shadow:0 6px 0 var(--ink);flex-wrap:wrap;justify-content:center}
+.dock-chip{width:52px;height:52px;border-radius:50%;border:3px solid var(--ink);background:var(--sky);
+  display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;transition:.2s}
+.dock-chip:hover{transform:translateY(-3px)}
+.dock-chip .dock-q{font-size:21px;font-weight:900;color:#7FA8B5}
+.dock-chip .dock-ic{width:100%;height:100%;border-radius:50%;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.dock-chip .dock-ic svg{width:74%;height:74%}
+.dock-chip .dock-bag{position:absolute;bottom:-6px;right:-6px;font-size:15px}
+.dock-chip.ex{background:#fff}
+.dock-chip.pk{border-color:var(--good);box-shadow:0 0 0 3px rgba(63,165,111,.28)}
+.dock-chip.is-good{border-color:var(--good)}
+.dock-chip.is-bad{border-color:var(--flood);opacity:.55;transform:rotate(-7deg)}
+
+/* ═════ 发现新数据弹窗（Google 风格）═════ */
+.dmodal{position:fixed;inset:0;z-index:300;background:rgba(13,38,44,.82);
+  -webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px);
+  display:flex;align-items:center;justify-content:center;animation:dmfade .25s ease}
+@keyframes dmfade{from{opacity:0}to{opacity:1}}
+.dmodal-x{position:absolute;top:22px;right:26px;width:48px;height:48px;border-radius:50%;
+  background:#fff;border:none;font-size:19px;font-weight:900;cursor:pointer;color:#1B3A40;
+  box-shadow:0 4px 14px rgba(0,0,0,.3);transition:.18s}
+.dmodal-x:hover{transform:scale(1.1) rotate(90deg)}
+.dmodal-inner{display:flex;gap:46px;align-items:center;max-width:880px;padding:24px;flex-wrap:wrap;justify-content:center;
+  animation:dmpop .35s cubic-bezier(.2,1.4,.4,1)}
+@keyframes dmpop{from{transform:scale(.82);opacity:0}to{transform:scale(1);opacity:1}}
+.dmodal-card{width:265px;height:265px;border-radius:26px;flex:0 0 auto;
+  border:2.5px solid rgba(200,190,255,.85);background:rgba(255,255,255,.07);
+  background-image:linear-gradient(rgba(255,255,255,.12) 1.5px,transparent 1.5px),
+    linear-gradient(90deg,rgba(255,255,255,.12) 1.5px,transparent 1.5px);
+  background-size:33px 33px;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 50px rgba(180,160,255,.3)}
+.dmodal-ic{width:172px;height:172px;border-radius:50%;border:4px solid var(--ink);
+  display:flex;align-items:center;justify-content:center;overflow:hidden;
+  animation:bob 3s ease-in-out infinite;box-shadow:0 10px 26px rgba(0,0,0,.35)}
+.dmodal-ic svg{width:76%;height:76%}
+.dmodal-info{max-width:430px;color:#fff;min-width:280px}
+.dmodal-kicker{font-size:14px;font-weight:800;letter-spacing:3px;opacity:.95;margin-bottom:10px}
+.dmodal-info h3{font-size:34px;font-weight:900;line-height:1.25;margin:0 0 12px}
+.dmodal-info p{font-size:17px;line-height:1.65;opacity:.92;margin:0 0 24px}
+.dmodal-btns{display:flex;gap:13px;flex-wrap:wrap}
+.btn-ghost2{background:rgba(255,255,255,.13)!important;color:#fff!important;border-color:#fff!important;box-shadow:0 4px 0 rgba(255,255,255,.4)!important}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
+
+/* ═════ 提交后的数据点评列表 ═════ */
+.cres{display:flex;gap:11px;align-items:flex-start;background:#fff;border:2.5px solid var(--ink);
+  border-radius:14px;padding:9px 12px;margin-top:9px;font-size:13.5px;line-height:1.55}
+.cres.g{border-left:7px solid var(--good)}
+.cres.b{border-left:7px solid var(--flood)}
+.cres-ic{flex:0 0 42px;width:42px;height:42px;border-radius:50%;border:2.5px solid var(--ink);
+  display:flex;align-items:center;justify-content:center;overflow:hidden}
+.cres-ic svg{width:74%;height:74%}
+.cres-why{font-weight:600;color:#4A6670;margin-top:2px}
+@media (max-width:640px){
+  .hs{width:46px;height:46px}
+  .dmodal-info h3{font-size:25px}
+  .dmodal-card{width:200px;height:200px}
+  .dmodal-ic{width:130px;height:130px}
+}
+
 </style>
 </head>
 <body>
@@ -370,20 +460,154 @@ tbody tr.row-reveal-bad td:nth-child(n+2){text-decoration:line-through}
 <!-- ════════ 阶段一：收集数据 ════════ -->
 <section class="screen" id="s-collect">
   <h2><span class="tag">关卡 ①</span> 🔍 收集数据</h2>
-  <p class="sub">把真正有用的情报装进背包 🎒</p>
+  <p class="sub">在镇子里找到 8 处闪光的数据点 ✨</p>
 
   <div class="mentor">
     <div class="doc"></div>
     <div>
       <div class="name">云博士 <button class="sayagain" onclick="say(SPEAK['s-collect'],true)">🔊 重听</button></div>
-      <div class="talk">8 条情报只有 <b>5 条</b>真有用——点卡片装进背包 🎒</div>
+      <div class="talk">镇子里藏着 <b>8 条数据</b> ✨ 点击闪光处查看，决定收不收进背包！</div>
     </div>
   </div>
 
-  <div class="cards" id="dataCards"></div>
+  <div class="explore">
+    <svg class="town-svg" viewBox="0 0 1000 500" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="skyg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#A8DFEF"/><stop offset="1" stop-color="#E9F8F2"/>
+        </linearGradient>
+        <linearGradient id="rvg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#8FDCEC"/><stop offset="1" stop-color="#5BBBD6"/>
+        </linearGradient>
+      </defs>
+      <rect width="1000" height="500" fill="url(#skyg)"/>
+      <!-- 太阳 -->
+      <circle cx="930" cy="64" r="34" fill="#FFD93D" stroke="#1B3A40" stroke-width="4"/>
+      <g stroke="#FFD93D" stroke-width="5" stroke-linecap="round">
+        <line x1="930" y1="10" x2="930" y2="22"/><line x1="884" y1="28" x2="893" y2="37"/><line x1="976" y1="28" x2="967" y2="37"/>
+      </g>
+      <!-- 云 -->
+      <g fill="#FFFFFF" stroke="#1B3A40" stroke-width="3.5">
+        <g class="sc1"><ellipse cx="180" cy="70" rx="46" ry="18"/><circle cx="158" cy="58" r="16"/><circle cx="196" cy="54" r="20"/></g>
+        <g class="sc2"><ellipse cx="640" cy="56" rx="38" ry="15"/><circle cx="624" cy="46" r="13"/><circle cx="654" cy="42" r="16"/></g>
+      </g>
+      <!-- 远山 -->
+      <path d="M0 250 Q120 140 250 245 Q330 180 440 250 L440 320 L0 320 Z" fill="#BBDCC8" opacity=".8"/>
+      <path d="M520 252 Q650 150 790 250 Q880 195 1000 255 L1000 320 L520 320 Z" fill="#BBDCC8" opacity=".65"/>
+      <!-- 左侧山丘 + 大坝 -->
+      <path d="M-20 330 Q90 150 260 320 L260 420 L-20 420 Z" fill="#8FCB7E" stroke="#1B3A40" stroke-width="4"/>
+      <g>
+        <rect x="28" y="180" width="120" height="120" rx="10" fill="#C8CBD4" stroke="#1B3A40" stroke-width="4"/>
+        <path d="M40 210h96M40 240h96M40 270h96M76 180v120M112 180v120" stroke="#9DA2B0" stroke-width="3"/>
+        <rect x="50" y="270" width="22" height="30" rx="8" fill="#3D6E8E" stroke="#1B3A40" stroke-width="3"/>
+        <rect x="104" y="270" width="22" height="30" rx="8" fill="#3D6E8E" stroke="#1B3A40" stroke-width="3"/>
+        <path d="M55 300 Q60 360 90 410 M115 300 Q118 360 140 410" stroke="#9FE0F0" stroke-width="13" stroke-linecap="round" fill="none" opacity=".9"/>
+        <text x="88" y="168" text-anchor="middle" font-size="17" font-weight="900" fill="#1B3A40">上游水库</text>
+      </g>
+      <!-- 草地 -->
+      <rect x="0" y="318" width="1000" height="112" fill="#A5D98A"/>
+      <path d="M0 318 H1000" stroke="#1B3A40" stroke-width="4"/>
+      <ellipse cx="380" cy="356" rx="26" ry="6" fill="#8FCB7E"/><ellipse cx="720" cy="350" rx="30" ry="7" fill="#8FCB7E"/>
+      <!-- 河流 -->
+      <rect x="0" y="408" width="1000" height="92" fill="url(#rvg)"/>
+      <path d="M0 408 H1000" stroke="#1B3A40" stroke-width="4"/>
+      <g stroke="#EAFBFF" stroke-width="4" stroke-linecap="round" fill="none" opacity=".85" class="waves">
+        <path d="M60 440 q14 -8 28 0 q14 8 28 0"/><path d="M320 462 q14 -8 28 0 q14 8 28 0"/>
+        <path d="M560 444 q14 -8 28 0 q14 8 28 0"/><path d="M820 466 q14 -8 28 0 q14 8 28 0"/>
+      </g>
+      <!-- 木桥 -->
+      <g stroke="#1B3A40" stroke-width="4">
+        <rect x="620" y="396" width="190" height="16" rx="8" fill="#C9935C"/>
+        <line x1="640" y1="412" x2="640" y2="470"/><line x1="715" y1="412" x2="715" y2="474"/><line x1="790" y1="412" x2="790" y2="470"/>
+        <path d="M620 396 Q715 366 810 396" fill="none" stroke-width="6"/>
+      </g>
+      <!-- 镇志馆（档案） -->
+      <g>
+        <rect x="520" y="232" width="150" height="96" rx="8" fill="#FFF4DC" stroke="#1B3A40" stroke-width="4"/>
+        <path d="M506 236 L595 178 L684 236 Z" fill="#E2574C" stroke="#1B3A40" stroke-width="4"/>
+        <rect x="576" y="276" width="38" height="52" rx="5" fill="#8A5A33" stroke="#1B3A40" stroke-width="3.5"/>
+        <rect x="534" y="252" width="28" height="24" rx="4" fill="#BDEAF5" stroke="#1B3A40" stroke-width="3"/>
+        <rect x="628" y="252" width="28" height="24" rx="4" fill="#BDEAF5" stroke="#1B3A40" stroke-width="3"/>
+        <text x="595" y="222" text-anchor="middle" font-size="16" font-weight="900" fill="#fff" stroke="#1B3A40" stroke-width=".5">镇志馆</text>
+      </g>
+      <!-- 民居 -->
+      <g>
+        <rect x="710" y="262" width="92" height="66" rx="7" fill="#FFFFFF" stroke="#1B3A40" stroke-width="4"/>
+        <path d="M700 266 L756 224 L812 266 Z" fill="#FF9F1C" stroke="#1B3A40" stroke-width="4"/>
+        <rect x="742" y="290" width="26" height="38" rx="4" fill="#3D6E8E" stroke="#1B3A40" stroke-width="3"/>
+      </g>
+      <!-- 集市摊位 ×2 -->
+      <g>
+        <rect x="252" y="332" width="104" height="14" rx="7" fill="#FFFFFF" stroke="#1B3A40" stroke-width="3.5"/>
+        <path d="M250 332 h108 l-9 -26 h-90 Z" fill="#FF7B6B" stroke="#1B3A40" stroke-width="3.5"/>
+        <path d="M268 306 v26 M290 306 v26 M312 306 v26 M334 306 v26" stroke="#FFD6CE" stroke-width="7"/>
+        <rect x="262" y="346" width="8" height="38" fill="#8A5A33" stroke="#1B3A40" stroke-width="3"/>
+        <rect x="338" y="346" width="8" height="38" fill="#8A5A33" stroke="#1B3A40" stroke-width="3"/>
+        <rect x="424" y="344" width="104" height="14" rx="7" fill="#FFFFFF" stroke="#1B3A40" stroke-width="3.5"/>
+        <path d="M422 344 h108 l-9 -26 h-90 Z" fill="#52C474" stroke="#1B3A40" stroke-width="3.5"/>
+        <path d="M440 318 v26 M462 318 v26 M484 318 v26 M506 318 v26" stroke="#D9F5DF" stroke-width="7"/>
+        <rect x="434" y="358" width="8" height="36" fill="#8A5A33" stroke="#1B3A40" stroke-width="3"/>
+        <rect x="510" y="358" width="8" height="36" fill="#8A5A33" stroke="#1B3A40" stroke-width="3"/>
+      </g>
+      <!-- 气象塔（雨量站） -->
+      <g>
+        <rect x="362" y="140" width="10" height="200" fill="#8A5A33" stroke="#1B3A40" stroke-width="3.5"/>
+        <rect x="318" y="128" width="98" height="14" rx="7" fill="#C9935C" stroke="#1B3A40" stroke-width="3.5"/>
+        <path d="M330 142 L352 180 M404 142 L382 180" stroke="#8A5A33" stroke-width="5"/>
+        <text x="367" y="118" text-anchor="middle" font-size="14" font-weight="900" fill="#1B3A40">气象塔</text>
+      </g>
+      <!-- 水位计立柱 -->
+      <g>
+        <rect x="150" y="368" width="14" height="100" rx="4" fill="#FFD93D" stroke="#1B3A40" stroke-width="3.5"/>
+        <path d="M153 384h8M153 400h8M153 416h8M153 432h8" stroke="#1B3A40" stroke-width="2.5"/>
+      </g>
+      <!-- 路牌（地形图） -->
+      <g>
+        <rect x="792" y="300 " width="9" height="78" fill="#8A5A33" stroke="#1B3A40" stroke-width="3"/>
+        <rect x="758" y="288" width="78" height="34" rx="6" fill="#FFF4DC" stroke="#1B3A40" stroke-width="3.5"/>
+      </g>
+      <!-- 村民 -->
+      <g>
+        <circle cx="900" cy="332" r="15" fill="#FFD6BF" stroke="#1B3A40" stroke-width="3.5"/>
+        <path d="M886 348 q14 -10 28 0 l4 30 h-36 Z" fill="#4FC3DC" stroke="#1B3A40" stroke-width="3.5"/>
+        <path d="M893 329 q7 6 14 0" stroke="#1B3A40" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+        <circle cx="894" cy="326" r="1.9" fill="#1B3A40"/><circle cx="906" cy="326" r="1.9" fill="#1B3A40"/>
+      </g>
+      <!-- 大树 -->
+      <g>
+        <rect x="958" y="282" width="14" height="56" fill="#8A5A33" stroke="#1B3A40" stroke-width="3.5"/>
+        <circle cx="965" cy="252" r="40" fill="#52C474" stroke="#1B3A40" stroke-width="4"/>
+        <circle cx="938" cy="270" r="24" fill="#52C474" stroke="#1B3A40" stroke-width="4"/>
+      </g>
+      <!-- 鸭子小鱼 -->
+      <text x="500" y="478" font-size="22" class="bobf">🦆</text>
+      <text x="230" y="488" font-size="18" class="bobf2">🐟</text>
+    </svg>
+    <div class="hs-layer" id="hotspots"></div>
+  </div>
+
+  <div class="dock-wrap"><div class="dock" id="dataDock"></div></div>
+  <div class="tip" id="collectResults" style="display:none"></div>
+
+  <!-- 发现新数据弹窗 -->
+  <div class="dmodal" id="dataModal" style="display:none">
+    <button class="dmodal-x" onclick="closeData()">✕</button>
+    <div class="dmodal-inner">
+      <div class="dmodal-card"><div class="dmodal-ic" id="dmIcon"></div></div>
+      <div class="dmodal-info">
+        <div class="dmodal-kicker">✨ 发现新数据</div>
+        <h3 id="dmName"></h3>
+        <p id="dmDesc"></p>
+        <div class="dmodal-btns">
+          <button class="btn" onclick="chooseData(true)">🎒 装进背包</button>
+          <button class="btn btn-ghost2" onclick="chooseData(false)">🙅 不需要它</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <div class="btn-row">
-    <button class="btn" id="btnSubmitCollect" onclick="submitCollect()">提交我的数据清单 ✅</button>
+    <button class="btn" id="btnSubmitCollect" disabled onclick="submitCollect()">提交我的数据清单 ✅</button>
     <button class="btn secondary" id="btnAfterCollect" style="display:none" onclick="go('s-clean',2)">下一关：清洗数据 →</button>
   </div>
 </section>
@@ -648,7 +872,7 @@ function toggleVoice(){
 /* ════════════════ 云博士语音（浏览器中文 TTS）════════════════ */
 const SPEAK={
  's-intro':'欢迎你，小预报员！我是云博士。清溪镇的河畔大集就建在河边，每年雨季都可能被洪水淹没，去年好多摊位都被冲走啦。镇长请我们用人工智能，建一个洪水预测模型，提前预知洪水。任务路线是：收集数据、清洗数据、训练模型、再用预测做决策。快输入你的名字，我们出发！',
- 's-collect':'第一关，收集数据！模型是靠数据喂出来的。镇上的人给了我们八条情报，但只有五条对预测洪水真正有用。点击卡片，把有用的装进背包，想好了再提交！',
+ 's-collect':'第一关，收集数据！清溪镇里藏着八条数据，找到闪闪发光的地方点一点！注意，不是所有数据都和洪水有关，看完介绍再决定收不收进背包。八条全看过，才能提交哦！',
  's-clean':'第二关，清洗数据！传感器也会犯迷糊。这十天的记录里混进了四行坏数据：有的空着没记，有的大得离谱，有的重复记了两次，还有的根本不可能发生。点击插上小红旗，把它们统统揪出来！给你两条线索：单日最大降雨量是一百八十毫米，河水位通常在二到六米之间。',
  's-train':'第三关，训练模型！挑选和洪水有关的特征喂给模型。我们把数据分成两份：百分之八十给模型学习，百分之二十藏起来当考题。用模型没见过的数据考试，才知道它是真学会了，还是只会背答案。选好特征，点开始训练！',
  's-deploy':'最后一关，预测加决策！雨季来了，模型对未来三天给出了洪水概率。发预警，大集要停业一天，摊主们少赚钱；不发预警，万一洪水真来，损失会大得多。AI负责预测，但发不发预警，每一天都由你来拍板！'
@@ -749,6 +973,8 @@ return `<svg viewBox="0 0 120 130" xmlns="http://www.w3.org/2000/svg" aria-label
 </svg>`;
 }
 document.addEventListener('DOMContentLoaded',()=>{
+  const dm=document.getElementById('dataModal');
+  if(dm) document.body.appendChild(dm);   /* 逃出 section 层叠上下文，全屏覆盖 */
   document.querySelectorAll('.doc').forEach(d=>d.innerHTML=docSVG());
   if(!sndOn){ $('btnSnd').classList.add('off'); $('btnSnd').textContent='🔇'; }
   if(!voiceOn) $('btnVoice').classList.add('off');
@@ -995,37 +1221,110 @@ function escapeHtml(s){return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','
 
 /* ═══════════ 关卡一：收集数据（满分 30） ═══════════ */
 let collectLocked=false;
+/* 场景锚点：好数据按身份固定位置，干扰项放进集市/村民三个点位 */
+const GOOD_POS={ rain:[36.7,17], gauge:[15.7,77], dam:[8.8,55], map:[79.7,60.5], scroll:[59.5,55] };
+const DECOY_POS=[[30.3,59],[47.6,61.5],[90,66]];
+let picked=[], explored=[], curData=-1;
+
 function renderCards(){
-  $('dataCards').innerHTML = CARDS.map((d,i)=>`
-    <div class="card" id="card${i}" onclick="toggleCard(${i})" style="animation:pop .5s ${i*0.07}s cubic-bezier(.2,1.5,.4,1) backwards">
-      <div class="icon-badge" style="background:${d.bg}">${ICONS[d.icon]}</div>
-      <div class="cname">${d.name}</div>
-      <div class="cdesc">${d.desc}</div>
-      <div class="verdict">${d.good?'✅ 有用：':'❌ 干扰项：'}${d.why}</div>
-    </div>`).join('');
+  picked=CARDS.map(()=>false);
+  explored=CARDS.map(()=>false);
+  curData=-1;
+  let dIdx=0;
+  $('hotspots').innerHTML = CARDS.map((d,i)=>{
+    const pos = GOOD_POS[d.icon] || DECOY_POS[dIdx++];
+    return `<div class="hs" id="hs${i}" style="left:${pos[0]}%;top:${pos[1]}%" onclick="openData(${i})" title="点击查看">
+      <span class="hs-ring"></span>
+      <div class="hs-badge" style="background:${d.bg}">${ICONS[d.icon]}</div>
+      <span class="hs-spark">✨</span>
+    </div>`;
+  }).join('');
+  $('collectResults').style.display='none';
+  renderDock();
+  updateCollectBtn();
 }
-function toggleCard(i){
+function renderDock(){
+  $('dataDock').innerHTML = CARDS.map((d,i)=>{
+    const ex=explored[i], pk=picked[i];
+    return `<div class="dock-chip ${ex?'ex':''} ${pk?'pk':''}" id="dk${i}" onclick="openData(${i})" title="${ex?d.name:'还没发现'}">
+      ${ex?`<div class="dock-ic" style="background:${d.bg}">${ICONS[d.icon]}</div>${pk?'<span class="dock-bag">🎒</span>':''}`:'<span class="dock-q">?</span>'}
+    </div>`;
+  }).join('');
+}
+function openData(i){
   if(collectLocked) return;
-  const sel=$('card'+i).classList.toggle('selected');
-  AU.sfx(sel?'pick':'unpick');
+  if(!explored[i] && $('dk'+i) && !$('hs'+i)) return;
+  curData=i;
+  const d=CARDS[i];
+  const ic=$('dmIcon');
+  ic.innerHTML=ICONS[d.icon];
+  ic.style.background=d.bg;
+  $('dmName').textContent=d.name;
+  $('dmDesc').textContent=d.desc;
+  $('dataModal').style.display='flex';
+  AU.sfx('whoosh');
+  say(`发现新数据：${d.name}。${d.desc}。要装进背包吗？`);
+}
+function closeData(){
+  $('dataModal').style.display='none';
+  curData=-1;
+  if('speechSynthesis' in window){ speechSynthesis.cancel(); stopMouth(); }
+}
+function chooseData(take){
+  const i=curData; if(i<0) return;
+  explored[i]=true; picked[i]=take;
+  AU.sfx(take?'pick':'unpick');
+  const hs=$('hs'+i);
+  hs.classList.add('found');
+  hs.classList.toggle('taken',take);
+  closeData();
+  renderDock();
+  updateCollectBtn();
+  const left=explored.filter(x=>!x).length;
+  if(left>0){
+    toast(take?`装进背包 🎒 还剩 ${left} 处闪光等你发现！`:`好，先不收。还剩 ${left} 处闪光等你发现！`);
+  }else{
+    toast('8 条数据全看过了！检查底部背包，然后提交 ✅');
+    say('八条数据全部看过啦！检查一下背包，没问题就点提交！');
+  }
+}
+function updateCollectBtn(){
+  const all = explored.length>0 && explored.every(Boolean);
+  const b=$('btnSubmitCollect');
+  b.disabled=!all;
+  b.textContent = all ? '提交我的数据清单 ✅' : `先探索全部数据（${explored.filter(Boolean).length}/8）🔍`;
 }
 function submitCollect(){
-  const picked = CARDS.map((d,i)=>$('card'+i).classList.contains('selected'));
-  if(!picked.some(Boolean)){toast('背包还空着呢，先采集数据再提交哦！');return;}
+  if(!explored.every(Boolean)){toast('镇子里还有闪光的数据没看完哦 ✨');return;}
   collectLocked=true;
   let goodHit=0, badHit=0;
   CARDS.forEach((d,i)=>{
-    const c=$('card'+i);
-    c.classList.add('locked','reveal', d.good?'is-good':'is-bad');
     if(picked[i] && d.good) goodHit++;
     if(picked[i] && !d.good) badHit++;
   });
   S.pts.collect = Math.max(0, goodHit*6 - badHit*5);
+  CARDS.forEach((d,i)=>{
+    const c=$('dk'+i); c.classList.add(d.good?'is-good':'is-bad'); c.onclick=null;
+    const h=$('hs'+i); h.classList.add('found', d.good?'is-good':'is-bad'); h.onclick=null;
+  });
+  const res=$('collectResults');
+  res.style.display='block';
+  res.innerHTML = '<b>📋 云博士点评：</b>' + CARDS.map((d,i)=>{
+    let tag;
+    if(picked[i] && d.good) tag='🎒✅ 收对了！';
+    else if(picked[i] && !d.good) tag='🎒❌ 这是干扰项';
+    else if(!picked[i] && d.good) tag='😮 漏掉了有用数据';
+    else tag='👍 没收它，判断正确';
+    return `<div class="cres ${d.good?'g':'b'}">
+      <span class="cres-ic" style="background:${d.bg}">${ICONS[d.icon]}</span>
+      <div><b>${d.name}</b>　${tag}<div class="cres-why">${d.why}</div></div>
+    </div>`;
+  }).join('');
   $('btnSubmitCollect').style.display='none';
   $('btnAfterCollect').style.display='inline-block';
   let msg;
   if(goodHit===5 && badHit===0){ msg=`🎉 完美！5 条有用数据全部命中，没带一个干扰项！收集得分 ${S.pts.collect}/30`; confetti(50); AU.sfx('pass'); say('太棒了！五条有用数据全部命中！'); }
-  else { msg=`找到 ${goodHit}/5 条有用数据${badHit?`，混进 ${badHit} 个干扰项`:''}，收集得分 ${S.pts.collect}/30。看看每张卡片下面的解释！`; AU.sfx(badHit?'bad':'good'); }
+  else { msg=`找到 ${goodHit}/5 条有用数据${badHit?`，混进 ${badHit} 个干扰项`:''}，收集得分 ${S.pts.collect}/30。看看云博士的点评！`; AU.sfx(badHit?'bad':'good'); }
   toast(msg);
 }
 
