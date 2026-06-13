@@ -60,10 +60,35 @@ function reload() { location.reload(); }
 // 4 关进度条（每关 0-100%）
 const skills = computed(() => [
   { label: '🔍 数据采集', got: game.pts.collect, max: 30, color: 'cyan'    },
-  { label: '🧹 数据净化', got: game.pts.clean,   max: 20, color: 'orange'  },
+  { label: '🧹 数据净化', got: game.pts.clean,   max: 20 + (game.speedBonus.clean || 0),  color: 'orange'  },
   { label: '🧠 模型训练', got: game.pts.train,   max: 30, color: 'pink'    },
-  { label: '🎯 智能预测', got: game.pts.decide,  max: 20, color: 'red'     }
+  { label: '🎯 智能预测', got: game.pts.decide,  max: 20 + (game.speedBonus.deploy || 0), color: 'red'     }
 ]);
+
+// v2.2：3 天决策回顾
+const decisionReview = computed(() => game.days.map((d, i) => {
+  const chose = game.dayChoice[i];
+  const isCorrect = d.bestWarn === null || chose === d.bestWarn;
+  return {
+    label: d.label,
+    emoji: d.emoji,
+    prob: d.prob,
+    chose,
+    isCorrect,
+    aux: d.aux
+  };
+}));
+
+// v2.2：情境化总结文案
+const summaryText = computed(() => {
+  const t = game.total;
+  if (t >= 95) return '完美无瑕！数据干净、模型准、决策稳——你已经把 AI 工程师的核心流程吃透了。';
+  if (t >= 85) return '非常棒！清溪镇在你手里安如磐石。继续保持对概率的敬畏。';
+  if (t >= 70) return '干得漂亮！你已经能让 AI 学到本事。下次试试更严格的挑战模式？';
+  if (t >= 55) return '完成任务！你已经懂了 AI 工作的四个步骤。再刷几局，把每关都磨到 90% 以上！';
+  return '雨季过去了。每个错误都是宝贵经验——再来一局，把干扰数据都挡在门外！';
+});
+const summaryEmoji = computed(() => game.total >= 85 ? '🌟' : game.total >= 60 ? '💪' : '🌱');
 
 // 6 个统计小卡
 const stats = computed(() => [
@@ -168,6 +193,32 @@ const stats = computed(() => [
           </div>
         </div>
       </div>
+    </section>
+
+    <!-- ====== v2.2 总结：3 天决策回顾 + 情境化文案 ====== -->
+    <section class="summary">
+      <div class="summary-head">
+        <span class="se">{{ summaryEmoji }}</span>
+        <div class="st">游戏总结 · 你的雨季三天</div>
+      </div>
+      <div class="day-review">
+        <div v-for="(d, i) in decisionReview" :key="i" class="day-card" :class="{ ok: d.isCorrect, bad: !d.isCorrect }">
+          <div class="dlabel">{{ d.emoji }} {{ d.label }}</div>
+          <div class="dprob">AI 预测 <b>{{ d.prob }}%</b></div>
+          <div class="dchoice">
+            你的决策：
+            <span class="cwarn" v-if="d.chose === true">🚨 发出预警</span>
+            <span class="chold" v-else-if="d.chose === false">🕊️ 不发预警</span>
+            <span class="cnone" v-else>—</span>
+          </div>
+          <div class="dverdict">
+            <span v-if="d.isCorrect" class="ok">✅ 正确判断</span>
+            <span v-else class="bad">❌ 这次失误</span>
+          </div>
+          <div class="daux" v-if="d.aux">辅助：{{ d.aux }}</div>
+        </div>
+      </div>
+      <p class="summary-text">{{ summaryText }}</p>
     </section>
 
     <!-- ====== 镇长感谢卡 ====== -->
@@ -509,6 +560,49 @@ const stats = computed(() => [
 .skill-bar i.bar-pink   { background: #F472B6; }
 .skill-bar i.bar-red    { background: #F87171; }
 
+/* ============================ v2.2 总结区 ============================ */
+.summary {
+  background: linear-gradient(180deg, #fff, #F8FAFC);
+  border: var(--bw) solid var(--c-slate);
+  border-radius: var(--r-card-lg);
+  padding: var(--space-4);
+  box-shadow: var(--sh-3);
+}
+.summary-head { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-3); }
+.summary-head .se { font-size: 30px; line-height: 1; }
+.summary-head .st { font-size: var(--font-lg); font-weight: 900; color: var(--c-slate); }
+.day-review { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-2); margin-bottom: var(--space-3); }
+.day-card {
+  background: #fff; border: var(--bw) solid var(--c-slate);
+  border-radius: 12px; padding: var(--space-2);
+  box-shadow: 0 3px 0 var(--c-slate);
+  font-size: var(--font-xs); text-align: left;
+}
+.day-card.ok { border-color: var(--c-emerald); box-shadow: 0 3px 0 var(--c-emerald); }
+.day-card.bad { border-color: var(--c-red); box-shadow: 0 3px 0 var(--c-red); }
+.day-card .dlabel { font-weight: 900; font-size: var(--font-sm); margin-bottom: 4px; }
+.day-card .dprob b { color: var(--c-orange); font-size: var(--font-md); }
+.day-card .dchoice { margin-top: 4px; color: var(--c-text-muted); font-weight: 700; }
+.day-card .cwarn { color: #C2410C; font-weight: 900; }
+.day-card .chold { color: #1E40AF; font-weight: 900; }
+.day-card .cnone { color: #9CA3AF; }
+.day-card .dverdict { margin-top: 6px; }
+.day-card .dverdict .ok { color: #047857; font-weight: 900; }
+.day-card .dverdict .bad { color: #B91C1C; font-weight: 900; }
+.day-card .daux { font-size: 10.5px; color: var(--c-text-muted); margin-top: 4px; font-style: italic; }
+.summary-text {
+  background: linear-gradient(180deg, #FEF3C7, #FDE68A);
+  border: var(--bw) solid var(--c-slate);
+  border-radius: 14px;
+  padding: var(--space-3);
+  font-size: var(--font-md); font-weight: 800; color: var(--c-slate);
+  text-align: center; line-height: 1.55;
+  box-shadow: 0 3px 0 var(--c-slate);
+}
+@media (max-width: 640px) {
+  .day-review { grid-template-columns: 1fr; }
+}
+
 /* ============================ MAYOR（紧凑版） ============================ */
 .mayor {
   position: relative; overflow: hidden;
@@ -643,5 +737,18 @@ const stats = computed(() => [
   .equip-grid { grid-template-columns: 1fr 1fr; }
   .big-score .num { font-size: 44px; text-shadow: 2px 2px 0 var(--c-slate); }
   .task-banner { font-size: var(--font-lg); }
+}
+
+/* v2.2 手机横屏 */
+@media (orientation: landscape) and (max-height: 500px) {
+  .hero { grid-template-columns: 280px 1fr; }
+  .hero-left { padding: 10px; }
+  .medal-disc { width: 50px; height: 50px; }
+  .medal-emoji { font-size: 30px; }
+  .task-banner { font-size: 16px; padding: 2px 12px; }
+  .big-score .num { font-size: 36px; }
+  .stat-card { padding: 4px 6px; }
+  .stat-card .v { font-size: 13px; }
+  .day-review { grid-template-columns: 1fr 1fr 1fr; }
 }
 </style>

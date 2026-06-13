@@ -5,6 +5,7 @@ import Stack from '../primitives/Stack.vue';
 import Cluster from '../primitives/Cluster.vue';
 import Center from '../primitives/Center.vue';
 import MentorCard from '../components/MentorCard.vue';
+import NextLevelCue from '../components/NextLevelCue.vue';
 import { useGame } from '../game/store';
 import { audio } from '../utils/audio';
 
@@ -125,13 +126,20 @@ function next() { game.scene = 'deploy'; }
 
       <div v-if="accBig" class="acc-big" :style="{ color: accBig.color }">{{ accBig.acc }}<small> %</small></div>
 
-      <Cluster :gap="2">
-        <button v-if="!passed" class="btn" :disabled="game.training" @click="startTrain">
+      <Cluster :gap="2" v-if="!passed">
+        <button class="btn" :disabled="game.training" @click="startTrain">
           {{ game.training ? '训练中…' : (accBig ? '调整后再训练 🔁' : '开始训练 ⚡') }}
         </button>
         <button v-if="accBig && !passed" class="btn secondary" @click="reset">重置</button>
-        <button v-if="passed" class="btn secondary" @click="next">模型合格！去预测 →</button>
       </Cluster>
+
+      <!-- v2.2：下一关入口自动弹出 -->
+      <NextLevelCue
+        :active="passed"
+        title="模型合格！"
+        :subtitle="`训练 ${game.pts.train}/30 分 · 准确率 ${game.accuracy}%`"
+        cta-text="下一关：预测决策"
+        @next="next" />
     </Stack>
   </Center>
 </template>
@@ -209,4 +217,12 @@ function next() { game.scene = 'deploy'; }
 .log { font-family: ui-monospace, Menlo, monospace; font-size: 12px; line-height: 1.5; white-space: pre-line; }
 .acc-big { text-align: center; font-size: 52px; font-weight: 900; }
 .acc-big small { font-size: var(--font-md); color: var(--c-text-muted); }
+
+/* v2.2 手机横屏适配 */
+@media (orientation: landscape) and (max-height: 500px) {
+  .dam { height: 150px; }
+  .dam-body { width: 200px; height: 110px; }
+  .chip { font-size: 13px; padding: 6px 12px; }
+  .acc-big { font-size: 36px; }
+}
 </style>

@@ -6,6 +6,8 @@ import Cluster from '../primitives/Cluster.vue';
 import Grid from '../primitives/Grid.vue';
 import Center from '../primitives/Center.vue';
 import MentorCard from '../components/MentorCard.vue';
+import OpeningCutscene from '../components/OpeningCutscene.vue';
+import NextLevelCue from '../components/NextLevelCue.vue';
 import { useGame } from '../game/store';
 import { ICONS } from '../assets/icons';
 import { TOWN_SVG, GOOD_POS, DECOY_POS } from '../assets/townSvg';
@@ -14,6 +16,12 @@ import { audio } from '../utils/audio';
 const game = useGame();
 const modal = ref<{ idx: number } | null>(null);
 const locked = ref(false);
+// v2.2：开场剧情动画（第一次进入第一关时播放，可跳过 / 看过不再放）
+const showCutscene = ref(!game.cutsceneSeen);
+function finishCutscene() {
+  showCutscene.value = false;
+  game.cutsceneSeen = true;
+}
 
 const hotspots = computed(() => {
   let dIdx = 0;
@@ -58,7 +66,10 @@ function submit() {
 function next() { game.scene = 'clean'; }
 </script>
 <template>
-  <Center max="layout" :px="3">
+  <!-- v2.2 开场剧情：8 帧故事 + AI 四步流程关联 -->
+  <OpeningCutscene v-if="showCutscene" @done="finishCutscene" />
+
+  <Center v-else max="layout" :px="3">
     <Stack :gap="3">
       <Cluster :gap="2" justify="between" align="center">
         <h2 class="h-2">🔍 收集数据</h2>
@@ -111,13 +122,20 @@ function next() { game.scene = 'clean'; }
         </div>
       </Grid>
 
-      <Cluster :gap="2">
-        <button v-if="!locked" class="btn" @click="submit"
+      <Cluster :gap="2" v-if="!locked">
+        <button class="btn" @click="submit"
           :disabled="!game.explored.every(Boolean)">
           {{ game.explored.every(Boolean) ? '提交我的数据清单 ✅' : `先探索全部数据（${game.explored.filter(Boolean).length}/8）` }}
         </button>
-        <button v-else class="btn secondary" @click="next">下一关：清洗数据 →</button>
       </Cluster>
+
+      <!-- v2.2：提交后下一关入口自动弹出 + 滚动到自己 -->
+      <NextLevelCue
+        :active="locked"
+        title="干得漂亮！"
+        :subtitle="`收集 ${game.pts.collect}/30 分 · 数据采集任务完成`"
+        cta-text="下一关：清洗数据"
+        @next="next" />
     </Stack>
   </Center>
 
@@ -232,4 +250,13 @@ function next() { game.scene = 'clean'; }
 .m-kicker { font-size: var(--font-xs); font-weight: 900; letter-spacing: 3px; color: var(--c-water-d); }
 .m-name { font-size: var(--font-xl); font-weight: 900; }
 .m-desc { font-size: var(--font-sm); color: var(--c-text-muted); text-align: center; }
+
+/* v2.2 手机横屏适配 */
+@media (orientation: landscape) and (max-height: 500px) {
+  .map { max-height: calc(100vh - 220px); }
+  .modal-card { padding: 14px 16px; max-width: 360px; }
+  .m-ic { width: 64px; height: 64px; }
+  .m-name { font-size: 16px; }
+  .m-desc { font-size: 13px; }
+}
 </style>

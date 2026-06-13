@@ -75,3 +75,64 @@ body {
 
 /* ===== Focus ring（无障碍）===== */
 :focus-visible { outline: 3px solid var(--c-candy); outline-offset: 2px; border-radius: var(--radius-2); }
+
+/* ===== 手机横屏适配（high-priority 全局规则）=====
+   触发：屏幕方向 landscape 且最大高度 ≤ 500px（典型手机横屏 480x844 / 390x844 等横放）
+   策略：缩小 header + 缩小所有 padding/gap + 触屏点击区保持 ≥ 40px */
+@media (orientation: landscape) and (max-height: 500px) {
+  :root {
+    --header-h: 44px;
+    --space-4: 10px;
+    --space-5: 14px;
+    --space-6: 20px;
+    --space-7: 24px;
+    --font-3xl: 22px;
+    --font-4xl: 26px;
+  }
+  .btn { padding: 8px 18px; font-size: 14px; min-height: 40px; }
+  .btn.small { padding: 6px 14px; font-size: 13px; min-height: 36px; }
+  /* 主内容上下内边距收紧 */
+  main { padding-top: var(--space-2); padding-bottom: var(--space-4); }
+  /* 各 hero/scene 标题不要换 4xl */
+  h1, .h-1 { font-size: var(--font-xl); }
+  h2, .h-2 { font-size: var(--font-lg); }
+}
+
+/* ===== A/B/C 三套题集视觉主题 =====
+   通过 body 上的 .theme-A/.theme-B/.theme-C 类切换。
+   主题影响：body 背景 / header 顶色 / 决策关 stage 天空色 / mentor 卡背景 / 题目区色调。
+   保持 design tokens 不变，只覆盖少量"主题点"。 */
+body.theme-A {
+  --theme-card-bg: #FFFEF6;
+  --theme-tag-bg: #FEF3C7;
+  --theme-tag-text: #92400E;
+  --theme-frame: #FFE9B8;
+}
+body.theme-A header { background: linear-gradient(180deg, #1D6F76 0%, #114750 100%) !important; }
+
+body.theme-B {
+  --theme-card-bg: #F0F4FB;
+  --theme-tag-bg: #DBEAFE;
+  --theme-tag-text: #1E3A8A;
+  --theme-frame: #C7D2FE;
+  background: linear-gradient(180deg, #5A6E84 0%, #8AA4B6 45%, #C2D4D8 100%) !important;
+}
+body.theme-B header { background: linear-gradient(180deg, #2B3A5A 0%, #1A243C 100%) !important; }
+body.theme-B .mentor { background: linear-gradient(180deg, #F0F4FB, #D8E1F0) !important; }
+body.theme-B .pill { background: #F0F4FB; }
+
+body.theme-C {
+  --theme-card-bg: #FFF8F0;
+  --theme-tag-bg: #FED7AA;
+  --theme-tag-text: #9A3412;
+  --theme-frame: #FFE5C7;
+  background: linear-gradient(180deg, #FFD194 0%, #FFC1A1 45%, #FFE5C7 100%) !important;
+}
+body.theme-C header { background: linear-gradient(180deg, #B25A38 0%, #7A3A1E 100%) !important; }
+body.theme-C .mentor { background: linear-gradient(180deg, #FFFAF3, #FFE9D6) !important; }
+
+/* 主题角标（HUD 上） */
+body.theme-A .hud-strip::before,
+body.theme-B .hud-strip::before,
+body.theme-C .hud-strip::before { content: var(--theme-emoji, ''); }
+

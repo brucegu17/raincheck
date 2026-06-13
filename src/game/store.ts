@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { SETS, GOOD_SOURCES, type DataCard, type CleanRow, type DecisionDay } from './sets';
 import { TITLES } from './titles';
 import { pickRandomSetExcludingLast } from '../utils/storage';
+import { applyTheme } from './theme';
 
 type Mode = 'adventure' | 'challenge';
 type SceneKey = 'intro' | 'collect' | 'clean' | 'train' | 'deploy' | 'end';
@@ -63,6 +64,12 @@ export const useGame = defineStore('game', {
     // 正确率
     totalCorrect: 0, totalQuestions: 0,
 
+    // v2.2：速度奖励
+    speedBonus: { clean: 0, deploy: 0 },
+
+    // v2.2：开场动画看过的标志（防止重玩复看）
+    cutsceneSeen: false,
+
     // UI
     mood: '' as '' | 'happy' | 'worried' | 'wow' | 'proud',
     toast: null as ToastMsg | null,
@@ -84,6 +91,7 @@ export const useGame = defineStore('game', {
 
       // 抽题集（严格排除上一次）
       this.setKey = pickRandomSetExcludingLast(['A','B','C']) as 'A'|'B'|'C';
+      applyTheme(this.setKey);
       const CUR = SETS[this.setKey];
 
       // 卡组：5 好 + 3 干扰，洗牌

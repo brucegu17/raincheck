@@ -10,6 +10,7 @@ import { ref, computed, onUnmounted } from 'vue';
 import { useGame } from '../game/store';
 import { audio } from '../utils/audio';
 import { tts } from '../utils/tts';
+import { useTimer } from '../utils/timer';
 import { WEATHER_SVG, weatherKey } from '../assets/weatherSvg';
 import Stack from '../primitives/Stack.vue';
 import Cluster from '../primitives/Cluster.vue';
@@ -19,6 +20,17 @@ const game = useGame();
 const step = ref(0);
 const decided = ref(false);
 const lastChoice = ref<boolean | null>(null);
+
+// v2.2 每天 20 秒决策计时（超时按"不发预警"自动决策不扣分）
+const dayTimer = useTimer({
+  duration: 20,
+  onExpire: () => {
+    if (currentDay.value && !decided.value) {
+      game.showToast('⏰ 时间到！默认"不发预警"');
+      decide(false, true);
+    }
+  }
+});
 
 const currentDay = computed(() => step.value >= 1 && step.value <= game.days.length ? game.days[step.value - 1] : null);
 const isFinale = computed(() => step.value === game.days.length + 1);
@@ -51,13 +63,23 @@ function enterDay(i: number) {
   if (d.prob >= 70) startHb(); else stopHb();
   game.setMood(d.prob >= 70 ? 'wow' : d.prob >= 40 ? 'worried' : 'happy');
   tts.speak(`第${'一二三'[i] || (i + 1)}天。${d.ctx}。模型预测，洪水概率百分之${d.prob}。`);
+  // v2.2：重置并启动 20 秒决策计时
+  dayTimer.reset();
+  dayTimer.start();
 }
 
-function decide(warn: boolean) {
-  if (!currentDay.value) return;
+function decide(warn: boolean, timeout = false) {
+  if (!currentDay.value || decided.value) return;
   decided.value = true;
   lastChoice.value = warn;
   stopHb();
+  // v2.2：累计当天速度奖励（非超时才有）
+  if (!timeout) {
+    const bonus = dayTimer.speedBonus(3);
+    game.speedBonus.deploy += bonus;
+    if (bonus > 0) game.pts.decide = (game.pts.decide || 0) + bonus;
+  }
+  dayTimer.stop();
   game.decide(step.value - 1, warn);
   if (warn) audio.sfx('siren');
   const d = currentDay.value;
@@ -130,6 +152,10 @@ function reactions(d: any, warn: boolean) {
         <div class="ribbon">
           <span class="rday">DAY {{ step }} / {{ game.days.length }}</span>
           {{ currentDay.label }}
+          <!-- v2.2 倒计时 -->
+          <span class="timer-pill" :class="{ warn: dayTimer.remaining.value < 8 }">
+            ⏱️ {{ Math.ceil(dayTimer.remaining.value) }}s
+          </span>
         </div>
         <div class="art-md" v-html="WEATHER_SVG[weatherKey(currentDay.prob)]"></div>
         <div class="ctx">{{ currentDay.emoji }} {{ currentDay.ctx }}</div>
@@ -144,10 +170,10 @@ function reactions(d: any, warn: boolean) {
         <div v-if="currentDay.aux" class="aux">额外辅助：<b>{{ currentDay.aux }}</b></div>
 
         <Cluster :gap="3" justify="center">
-          <button class="choice warn" @click="decide(true)">
+          <button class="choice warn" @click="decide(true, false)">
             <span class="ci">🚨</span><span class="ct">发出预警</span><span class="cd">大集停业一天</span>
           </button>
-          <button class="choice hold" @click="decide(false)">
+          <button class="choice hold" @click="decide(false, false)">
             <span class="ci">🕊️</span><span class="ct">不发预警</span><span class="cd">照常开集</span>
           </button>
           <button class="choice hint" @click="useHint">
@@ -251,6 +277,10 @@ function reactions(d: any, warn: boolean) {
   border-radius: var(--radius-pill); padding: var(--space-2) var(--space-4);
 }
 .rday { background: var(--c-sun); color: var(--c-ink); border-radius: var(--radius-pill); padding: 2px 11px; font-size: var(--font-xs); }
+.timer-pill { background: rgba(255,255,255,.95); color: var(--c-ink); border: 2px solid var(--c-ink);
+  border-radius: var(--radius-pill); padding: 2px 10px; font-size: var(--font-xs); font-weight: 900; box-shadow: 0 2px 0 var(--c-ink); }
+.timer-pill.warn { background: #FF9F8C; animation: tpulse .55s ease-in-out infinite; }
+@keyframes tpulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.1); } }
 .art-md { width: 110px; height: 110px; margin: 0 auto; }
 .art-md :deep(svg) { width: 100%; height: 100%; }
 .ctx {
@@ -336,4 +366,32 @@ function reactions(d: any, warn: boolean) {
 .cn { font-size: var(--font-xs); font-weight: 900; color: var(--c-water-d); }
 .cx { font-size: var(--font-sm); font-weight: 600; color: #3A5560; }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* v2.2 手机横屏适配 */
+@media (orientation: landscape) and (max-height: 500px) {
+  .stage { padding: 12px 16px; min-height: calc(100vh - 44px); }
+  .content { max-width: 720px; }
+  .art { width: 80px; height: 80px; margin: 0; }
+  .art-md { width: 70px; height: 70px; margin: 0; }
+  .cut-title { font-size: 22px; }
+  .cut-sub { font-size: 13px; }
+  .ribbon { font-size: 14px; padding: 4px 12px; }
+  .ai { padding: 8px 14px; max-width: 340px; }
+  .ai-prob { font-size: 40px; }
+  .ai-prob span { font-size: 18px; }
+  .ai-label { font-size: 11px; margin-bottom: 6px; }
+  .gauge { height: 14px; }
+  .choice { width: 130px; padding: 10px 8px; }
+  .choice .ci { font-size: 22px; }
+  .choice .ct { font-size: 13px; }
+  .choice .cd { font-size: 11px; }
+  .hint-box { font-size: 12px; padding: 8px 10px; }
+  .rcard { padding: 10px 14px; max-width: 440px; }
+  .rct { font-size: 13px; }
+  .cb { padding: 6px 10px; }
+  .ca { width: 28px; height: 28px; flex-basis: 28px; font-size: 16px; }
+  .cn { font-size: 11px; }
+  .cx { font-size: 12px; }
+  .weather-art, .result-art { width: 80px; height: 80px; }
+}
 </style>

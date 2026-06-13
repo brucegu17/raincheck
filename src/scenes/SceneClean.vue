@@ -1,16 +1,32 @@
 <!-- 第二关：数据清洗，探险=卡片侦探板，挑战=表格 -->
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import Stack from '../primitives/Stack.vue';
 import Cluster from '../primitives/Cluster.vue';
 import Grid from '../primitives/Grid.vue';
 import Center from '../primitives/Center.vue';
 import MentorCard from '../components/MentorCard.vue';
+import NextLevelCue from '../components/NextLevelCue.vue';
 import { useGame } from '../game/store';
 import { audio } from '../utils/audio';
+import { useTimer } from '../utils/timer';
 
 const game = useGame();
 const locked = ref(false);
+
+// v2.2 计时：60 秒，超时自动按当前选择提交（不扣分），剩余越多奖励越高
+const timer = useTimer({
+  duration: 60,
+  onExpire: () => {
+    if (!locked.value) {
+      game.showToast('⏰ 时间到！按当前选择提交');
+      submit(true);
+    }
+  }
+});
+onMounted(() => timer.start());
+
+const speedBonusPreview = computed(() => Math.ceil(timer.remaining.value / 60 * 8));
 
 function cueClass(r: any, i: number): string {
   if (!r.bad) return '';
@@ -31,10 +47,16 @@ function toggle(i: number) {
   game.cleanFlagged[i] = !game.cleanFlagged[i];
   audio.sfx(game.cleanFlagged[i] ? 'flag' : 'unpick');
 }
-function submit() {
-  if (!game.cleanFlagged.some(Boolean)) { game.showToast('先点几张可疑卡片 🚩'); return; }
+function submit(timeout = false) {
+  if (!timeout && !game.cleanFlagged.some(Boolean)) { game.showToast('先点几张可疑卡片 🚩'); return; }
+  if (locked.value) return;
   locked.value = true;
+  // v2.2：速度奖励（剩余时间换分，超时为 0）
+  const bonus = timer.speedBonus(8);
+  game.speedBonus.clean = bonus;
+  timer.stop();
   game.submitClean();
+  if (bonus > 0) game.pts.clean += bonus;
 }
 function next() { game.scene = 'train'; }
 
@@ -51,7 +73,14 @@ const verdict = (r: any, i: number) => {
     <Stack :gap="3">
       <Cluster :gap="2" justify="between" align="center">
         <h2 class="h-2">🧹 清洗数据 <span class="pill mode">{{ game.mode === 'challenge' ? '挑战' : '探险' }}</span></h2>
-        <span class="pill">关卡 ② · 找出 4 行</span>
+        <Cluster :gap="2">
+          <span class="pill">关卡 ② · 找出 4 行</span>
+          <!-- v2.2 计时条：剩余越多越亮，速度奖励预览 -->
+          <span class="pill timer" v-if="!locked" :class="{ warn: timer.remaining.value < 15 }">
+            ⏱️ {{ Math.ceil(timer.remaining.value) }}s
+            <span class="bonus">+{{ speedBonusPreview }}</span>
+          </span>
+        </Cluster>
       </Cluster>
 
       <MentorCard text="记录里混进了 <b>4 行坏数据</b>。看看：缺失值/异常值/重复/负数。" collapsible />
@@ -92,15 +121,27 @@ const verdict = (r: any, i: number) => {
         </tbody>
       </table>
 
-      <Cluster :gap="2">
-        <button v-if="!locked" class="btn" @click="submit">清除可疑数据 🧹</button>
-        <button v-else class="btn secondary" @click="next">下一关：训练模型 →</button>
+      <Cluster :gap="2" v-if="!locked">
+        <button class="btn" @click="submit()">清除可疑数据 🧹</button>
       </Cluster>
+
+      <!-- v2.2：下一关入口自动弹出 -->
+      <NextLevelCue
+        :active="locked"
+        title="火眼金睛！"
+        :subtitle="`清洗 ${game.pts.clean}/${20 + (game.speedBonus.clean || 0)} 分 · 数据净化完成`"
+        :bonus="game.speedBonus.clean > 0 ? `速度奖励 +${game.speedBonus.clean} 分` : undefined"
+        cta-text="下一关：训练模型"
+        @next="next" />
     </Stack>
   </Center>
 </template>
 <style scoped>
 .pill.mode { background: var(--c-purple); color: #fff; border-color: var(--c-ink); }
+.pill.timer { background: linear-gradient(180deg, #FFF6E3, #FFE9B8); display: inline-flex; align-items: center; gap: 6px; }
+.pill.timer.warn { background: linear-gradient(180deg, #FFE4D1, #FF9F8C); animation: pulse 0.6s ease-in-out infinite; }
+.pill.timer .bonus { color: #C2410C; font-weight: 900; font-size: 11px; background: #FFEDD5; border: 1.5px solid var(--c-ink); border-radius: var(--radius-pill); padding: 1px 6px; }
+@keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
 .bin {
   margin-top: var(--space-1);
   padding: var(--space-2) var(--space-3);
@@ -158,4 +199,12 @@ const verdict = (r: any, i: number) => {
 .t tr.row-bad td { background: #FFDFD9; color: #c0392b; }
 .t tr.row-good td { background: #E2F8E9; }
 .rwhy { font-size: 11.5px; color: #c0392b; font-weight: 800; }
+
+/* v2.2 手机横屏：用 4 列网格代替 5+ 列以避免卡片太挤 */
+@media (orientation: landscape) and (max-height: 500px) {
+  .dcard { padding: 8px; }
+  .dcd { font-size: 12px; }
+  .drow { font-size: 11.5px; padding: 1px 0; }
+  .bin { font-size: 12px; padding: 6px 10px; }
+}
 </style>
