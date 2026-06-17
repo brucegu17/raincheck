@@ -31,14 +31,18 @@ export const tts = {
     return this.isOn;
   },
   cancel() { if ('speechSynthesis' in window) speechSynthesis.cancel(); },
-  speak(text: string, force = false) {
-    if (!('speechSynthesis' in window)) return;
-    if (!this.isOn && !force) return;
+  speak(text: string, force = false, onEnd?: () => void) {
+    if (!('speechSynthesis' in window)) { onEnd?.(); return; }
+    if (!this.isOn && !force) { onEnd?.(); return; }
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(String(text).replace(/<[^>]+>/g, '').replace(/[🎉🎲🚩🎒⚡⚖️📝]/g, ''));
     u.lang = 'zh-CN';
     if (zhVoice) u.voice = zhVoice;
     u.rate = 0.95; u.pitch = 1.15; u.volume = 1;
+    if (onEnd) {
+      u.onend = onEnd;
+      u.onerror = onEnd;
+    }
     speechSynthesis.speak(u);
   }
 };

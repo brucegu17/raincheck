@@ -23,32 +23,74 @@ const FRAMES = [
   { id: 'decide',   title: '第四步 · 你来决策', text: 'AI 算出"明天 87% 会洪水"，<b>发不发预警，由你拍板</b>。最终决定权在人！', speak: 'AI 算出明天百分之八十七会洪水，发不发预警，由你拍板。AI 给概率，但最终决定权永远在人！' }
 ];
 
-const FRAME_MS = 10000;
+// 时长策略：等配音念完后停顿 1s 再切；同时保证 6s 最短（看清画面）、25s 最长（防 TTS 卡死）。
+const MIN_MS = 6000;
+const MAX_MS = 25000;
+const TAIL_MS = 1000;
+const FALLBACK_MS = 9000; // TTS 关闭/不支持时每帧固定时长
+
 const idx = ref(0);
 const progress = ref(0);
 let frameTimer: number | null = null;
 let progressTimer: number | null = null;
+let ttsEnded = false;
+let frameStart = 0;
 
 const current = computed(() => FRAMES[idx.value]);
 const isLast = computed(() => idx.value === FRAMES.length - 1);
 
-function startFrame() {
+function clearAllTimers() {
+  if (frameTimer) { clearTimeout(frameTimer); frameTimer = null; }
+  if (progressTimer) { clearInterval(progressTimer); progressTimer = null; }
+}
+
+function scheduleAdvance(ms: number) {
   if (frameTimer) clearTimeout(frameTimer);
-  if (progressTimer) clearInterval(progressTimer);
+  if (isLast.value) return;
+  frameTimer = window.setTimeout(() => goNext(), Math.max(0, ms));
+}
+
+function startFrame() {
+  clearAllTimers();
   progress.value = 0;
+  ttsEnded = false;
   audio.sfx('whoosh');
-  tts.speak(current.value.speak, true);
-  const startTime = Date.now();
+  frameStart = Date.now();
+  const frameIdxAtStart = idx.value;
+
+  // 兜底：MAX_MS 一定会切（防止 TTS 失败卡住）
+  scheduleAdvance(MAX_MS);
+
+  // 进度条按"预期总时长"（取 TTS 估时 + 1s 尾，未结束时上限 MAX_MS）走
+  // 一旦 TTS 结束，剩余进度快速补齐到 100%
+  let expectedTotal = MAX_MS;
   progressTimer = window.setInterval(() => {
-    progress.value = Math.min(100, (Date.now() - startTime) / FRAME_MS * 100);
+    const elapsed = Date.now() - frameStart;
+    progress.value = Math.min(100, elapsed / expectedTotal * 100);
   }, 100);
-  if (!isLast.value) frameTimer = window.setTimeout(() => goNext(), FRAME_MS);
+
+  // 启动 TTS，结束时安排切帧
+  tts.speak(current.value.speak, true, () => {
+    // 防止过期回调影响后续帧
+    if (frameIdxAtStart !== idx.value) return;
+    ttsEnded = true;
+    const elapsed = Date.now() - frameStart;
+    const waitMore = Math.max(MIN_MS - elapsed, 0) + TAIL_MS;
+    expectedTotal = elapsed + waitMore;
+    scheduleAdvance(waitMore);
+  });
+
+  // TTS 被全局禁用时，speak 会立即同步回调 onEnd → ttsEnded 已 true
+  // 此时 elapsed≈0，等够 MIN_MS+TAIL 或回退到 FALLBACK_MS
+  if (ttsEnded) {
+    expectedTotal = FALLBACK_MS;
+    scheduleAdvance(FALLBACK_MS);
+  }
 }
 function goNext() { if (isLast.value) { skip(); return; } idx.value++; }
 function goPrev() { if (idx.value > 0) idx.value--; }
 function skip() {
-  if (frameTimer) clearTimeout(frameTimer);
-  if (progressTimer) clearInterval(progressTimer);
+  clearAllTimers();
   tts.cancel();
   audio.sfx('star');
   emit('done');
@@ -78,7 +120,7 @@ onUnmounted(() => {
     <Transition name="frame" mode="out-in">
       <div class="stage" :key="idx" :class="'frame-' + current.id">
 
-        <!-- 帧 1：晴天小镇 -->
+        <!-- 帧 1：晴天小镇 + 热闹河畔大集 -->
         <svg v-if="current.id === 'town'" class="scene" viewBox="0 0 800 400" preserveAspectRatio="xMidYMid meet">
           <defs>
             <linearGradient id="t1-sky" x1="0" y1="0" x2="0" y2="1">
@@ -90,55 +132,187 @@ onUnmounted(() => {
           </defs>
           <rect width="800" height="400" fill="url(#t1-sky)"/>
           <!-- 太阳光线旋转 -->
-          <g transform="translate(660,80)">
+          <g transform="translate(680,70)">
             <g>
               <g v-for="n in 8" :key="n" :transform="`rotate(${n*45})`"><rect x="-2" y="-50" width="4" height="20" rx="2" fill="#FFD23F"/></g>
               <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="12s" repeatCount="indefinite"/>
             </g>
-            <circle r="28" fill="#FFE27A"/><circle r="22" fill="#FFD23F"/>
+            <circle r="24" fill="#FFE27A"/><circle r="18" fill="#FFD23F"/>
           </g>
           <!-- 飘云 -->
-          <g transform="translate(140,70)">
-            <ellipse cx="0" cy="0" rx="40" ry="14" fill="#fff"/><circle cx="-20" cy="-6" r="14" fill="#fff"/><circle cx="14" cy="-10" r="18" fill="#fff"/>
-            <animateTransform attributeName="transform" type="translate" values="100,70; 200,70; 100,70" dur="20s" repeatCount="indefinite"/>
+          <g>
+            <ellipse cx="0" cy="0" rx="34" ry="12" fill="#fff"/><circle cx="-18" cy="-5" r="12" fill="#fff"/><circle cx="14" cy="-9" r="15" fill="#fff"/>
+            <animateTransform attributeName="transform" type="translate" values="100,55; 220,55; 100,55" dur="22s" repeatCount="indefinite"/>
           </g>
-          <g transform="translate(580,95)">
-            <ellipse cx="0" cy="0" rx="34" ry="12" fill="#fff" opacity=".9"/><circle cx="-16" cy="-5" r="12" fill="#fff" opacity=".9"/><circle cx="12" cy="-8" r="15" fill="#fff" opacity=".9"/>
-            <animateTransform attributeName="transform" type="translate" values="620,95; 540,95; 620,95" dur="24s" repeatCount="indefinite"/>
+          <g>
+            <ellipse cx="0" cy="0" rx="28" ry="10" fill="#fff" opacity=".9"/><circle cx="-13" cy="-4" r="10" fill="#fff" opacity=".9"/><circle cx="11" cy="-7" r="13" fill="#fff" opacity=".9"/>
+            <animateTransform attributeName="transform" type="translate" values="540,85; 460,85; 540,85" dur="26s" repeatCount="indefinite"/>
+          </g>
+          <!-- 飞鸟 -->
+          <g>
+            <path d="M0 0 q4 -6 8 0 M8 0 q4 -6 8 0" stroke="#2A4A50" stroke-width="2" fill="none"/>
+            <animateTransform attributeName="transform" type="translate" values="200,90; 600,75; 800,90" dur="14s" repeatCount="indefinite"/>
+          </g>
+          <g>
+            <path d="M0 0 q3 -4 6 0 M6 0 q3 -4 6 0" stroke="#2A4A50" stroke-width="1.6" fill="none"/>
+            <animateTransform attributeName="transform" type="translate" values="100,130; 500,120; 820,130" dur="18s" repeatCount="indefinite"/>
           </g>
           <!-- 远山 -->
-          <path d="M-20 240 Q140 180 280 230 Q420 170 560 220 Q700 180 820 230 L820 260 L-20 260 Z" fill="#8CBBA2" opacity=".7"/>
+          <path d="M-20 200 Q140 145 280 195 Q420 135 560 185 Q700 145 820 195 L820 230 L-20 230 Z" fill="#8CBBA2" opacity=".7"/>
           <!-- 草地 -->
-          <path d="M-20 260 Q200 240 400 254 Q620 270 820 248 L820 340 L-20 340 Z" fill="#9FD480"/>
-          <!-- 镇子三栋房 -->
-          <g transform="translate(220,228)"><rect x="-30" y="0" width="60" height="40" fill="#FFFDF6" stroke="#2A4A50" stroke-width="2"/><path d="M-38 0 L0 -28 L38 0 Z" fill="#E2574C" stroke="#2A4A50" stroke-width="2"/><rect x="-8" y="20" width="16" height="20" fill="#3D7C9C" stroke="#2A4A50" stroke-width="1.5"/></g>
-          <g transform="translate(370,222)"><rect x="-35" y="0" width="70" height="46" fill="#FFF3D8" stroke="#2A4A50" stroke-width="2"/><path d="M-42 0 L0 -30 L42 0 Z" fill="#D8564A" stroke="#2A4A50" stroke-width="2"/><rect x="-8" y="22" width="16" height="24" fill="#8A5A38" stroke="#2A4A50" stroke-width="1.5"/></g>
-          <g transform="translate(510,230)"><rect x="-26" y="0" width="52" height="38" fill="#FFFDF6" stroke="#2A4A50" stroke-width="2"/><path d="M-34 0 L0 -24 L34 0 Z" fill="#F2A03D" stroke="#2A4A50" stroke-width="2"/></g>
+          <path d="M-20 240 Q200 224 400 236 Q620 250 820 232 L820 310 L-20 310 Z" fill="#9FD480"/>
+          <!-- 镇子三栋房（后排，被集市挡） -->
+          <g transform="translate(150,208)"><rect x="-26" y="0" width="52" height="34" fill="#FFFDF6" stroke="#2A4A50" stroke-width="2"/><path d="M-32 0 L0 -22 L32 0 Z" fill="#E2574C" stroke="#2A4A50" stroke-width="2"/><rect x="-6" y="16" width="12" height="18" fill="#3D7C9C" stroke="#2A4A50" stroke-width="1.4"/></g>
+          <g transform="translate(680,210)"><rect x="-24" y="0" width="48" height="34" fill="#FFFDF6" stroke="#2A4A50" stroke-width="2"/><path d="M-30 0 L0 -22 L30 0 Z" fill="#F2A03D" stroke="#2A4A50" stroke-width="2"/><rect x="-5" y="16" width="10" height="18" fill="#8A5A38" stroke="#2A4A50" stroke-width="1.4"/></g>
+          <g transform="translate(580,206)"><rect x="-22" y="0" width="44" height="32" fill="#FFF3D8" stroke="#2A4A50" stroke-width="2"/><path d="M-28 0 L0 -22 L28 0 Z" fill="#D8564A" stroke="#2A4A50" stroke-width="2"/></g>
+          <!-- "清溪镇" 牌坊 -->
+          <g transform="translate(400,200)">
+            <rect x="-60" y="-30" width="120" height="20" fill="#D8564A" stroke="#1B3A40" stroke-width="2.4" rx="3"/>
+            <text x="0" y="-14" font-size="14" font-weight="900" text-anchor="middle" fill="#fff">清 溪 镇</text>
+            <rect x="-66" y="-30" width="6" height="60" fill="#8A5A38" stroke="#1B3A40" stroke-width="2"/>
+            <rect x="60" y="-30" width="6" height="60" fill="#8A5A38" stroke="#1B3A40" stroke-width="2"/>
+          </g>
           <!-- 集市彩旗 -->
-          <g class="banner" transform="translate(300,200)">
-            <path d="M0 0 Q60 -10 120 0" stroke="#6E4527" stroke-width="1.5" fill="none"/>
-            <g v-for="(c, i) in ['#FF7B6B','#FFCF3F','#52C474','#4FC3DC']" :key="c" :transform="`translate(${i*30+15}, ${i%2?2:-2})`"><polygon :points="'0,0 5,-12 10,0'" :fill="c"/></g>
+          <g class="banner" transform="translate(220,170)">
+            <path d="M0 0 Q180 -10 360 0" stroke="#6E4527" stroke-width="1.6" fill="none"/>
+            <g v-for="(c, i) in ['#FF7B6B','#FFCF3F','#52C474','#4FC3DC','#B388FF','#FF9F1C']" :key="c" :transform="`translate(${i*55+25}, ${i%2?2:-2})`"><polygon points="0,0 6,-14 12,0" :fill="c"/></g>
+          </g>
+          <!-- 摊位 1：糖葫芦 -->
+          <g transform="translate(170,290)">
+            <!-- 棚顶 -->
+            <path d="M-32 -28 L32 -28 L36 -36 L-36 -36 Z" fill="#E2574C" stroke="#1B3A40" stroke-width="2"/>
+            <rect x="-30" y="-28" width="60" height="6" fill="#FFCF3F" stroke="#1B3A40" stroke-width="1.5"/>
+            <!-- 桌 -->
+            <rect x="-30" y="-2" width="60" height="22" fill="#C9935C" stroke="#1B3A40" stroke-width="2"/>
+            <!-- 糖葫芦插架 -->
+            <rect x="-22" y="-22" width="44" height="22" fill="#FFE8C7" stroke="#1B3A40" stroke-width="1.5"/>
+            <g v-for="i in 5" :key="i" :transform="`translate(${-18 + i*8}, -22)`">
+              <line x1="0" y1="0" x2="0" y2="22" stroke="#8A5A38" stroke-width="1.5"/>
+              <circle cx="0" cy="2" r="3" fill="#E2574C" stroke="#1B3A40" stroke-width=".8"/>
+              <circle cx="0" cy="9" r="3" fill="#E2574C" stroke="#1B3A40" stroke-width=".8"/>
+              <circle cx="0" cy="16" r="3" fill="#E2574C" stroke="#1B3A40" stroke-width=".8"/>
+            </g>
+            <!-- 摊主头 -->
+            <g transform="translate(0,-46)">
+              <circle r="9" fill="#FFD9BF" stroke="#1B3A40" stroke-width="1.6"/>
+              <path d="M-9 -4 q9 -8 18 0" fill="#5C3A20" stroke="#1B3A40" stroke-width="1.4" transform="translate(-9,0)"/>
+              <circle cx="-3" cy="-1" r="1" fill="#1B3A40"/><circle cx="3" cy="-1" r="1" fill="#1B3A40"/>
+              <path d="M-3 3 q3 2 6 0" stroke="#1B3A40" stroke-width="1" fill="none"/>
+            </g>
+            <text x="0" y="-44" font-size="14" text-anchor="middle">😊</text>
+          </g>
+          <!-- 摊位 2：瓜果（西瓜+黄瓜+苹果） -->
+          <g transform="translate(450,290)">
+            <path d="M-40 -28 L40 -28 L44 -36 L-44 -36 Z" fill="#52C474" stroke="#1B3A40" stroke-width="2"/>
+            <rect x="-38" y="-28" width="76" height="6" fill="#FFCF3F" stroke="#1B3A40" stroke-width="1.5"/>
+            <rect x="-36" y="-2" width="72" height="22" fill="#C9935C" stroke="#1B3A40" stroke-width="2"/>
+            <!-- 西瓜 -->
+            <ellipse cx="-22" cy="-6" rx="11" ry="8" fill="#3FA56F" stroke="#1B3A40" stroke-width="1.6"/>
+            <path d="M-30 -8 q8 -3 16 0 M-30 -4 q8 -3 16 0" stroke="#1B3A40" stroke-width=".8" fill="none"/>
+            <ellipse cx="-6" cy="-6" rx="9" ry="6" fill="#3FA56F" stroke="#1B3A40" stroke-width="1.6"/>
+            <!-- 苹果 -->
+            <circle cx="14" cy="-8" r="7" fill="#E2574C" stroke="#1B3A40" stroke-width="1.6"/>
+            <path d="M14 -15 q2 -3 4 0" stroke="#1B3A40" stroke-width="1.2" fill="none"/>
+            <circle cx="28" cy="-7" r="6" fill="#E2574C" stroke="#1B3A40" stroke-width="1.6"/>
+            <!-- 摊主头（戴草帽） -->
+            <g transform="translate(0,-44)">
+              <path d="M-13 0 L13 0 L10 -3 L-10 -3 Z" fill="#D8A85A" stroke="#1B3A40" stroke-width="1.6"/>
+              <ellipse cx="0" cy="-3" rx="6" ry="4" fill="#D8A85A" stroke="#1B3A40" stroke-width="1.6"/>
+              <circle cy="6" r="9" fill="#FFD9BF" stroke="#1B3A40" stroke-width="1.6"/>
+              <circle cx="-3" cy="5" r="1" fill="#1B3A40"/><circle cx="3" cy="5" r="1" fill="#1B3A40"/>
+              <path d="M-3 9 q3 2 6 0" stroke="#1B3A40" stroke-width="1" fill="none"/>
+            </g>
+            <!-- 喊价气泡 -->
+            <g>
+              <ellipse cx="36" cy="-52" rx="22" ry="10" fill="#fff" stroke="#1B3A40" stroke-width="1.6"/>
+              <text x="36" y="-48" font-size="9" font-weight="900" text-anchor="middle" fill="#1B3A40">甜西瓜!</text>
+              <animateTransform attributeName="transform" type="scale" values="1;1.08;1" dur="1.6s" repeatCount="indefinite" additive="sum"/>
+            </g>
+          </g>
+          <!-- 跑动的孩子 1 -->
+          <g>
+            <animateTransform attributeName="transform" type="translate" values="280,280; 380,280; 280,280" dur="6s" repeatCount="indefinite"/>
+            <g>
+              <ellipse cx="0" cy="0" rx="6" ry="4" fill="#000" opacity=".15"/>
+              <circle cx="0" cy="-22" r="7" fill="#FFD9BF" stroke="#1B3A40" stroke-width="1.4"/>
+              <path d="M-7 -28 q7 -8 14 0" fill="#3A2418" stroke="#1B3A40" stroke-width="1.2"/>
+              <circle cx="-2" cy="-22" r=".9" fill="#1B3A40"/><circle cx="2" cy="-22" r=".9" fill="#1B3A40"/>
+              <path d="M-2 -19 q2 2 4 0" stroke="#1B3A40" stroke-width=".8" fill="none"/>
+              <rect x="-6" y="-15" width="12" height="11" fill="#FFCF3F" stroke="#1B3A40" stroke-width="1.4" rx="2"/>
+              <line x1="-6" y1="-12" x2="-12" y2="-8" stroke="#FFD9BF" stroke-width="2" stroke-linecap="round"/>
+              <line x1="6" y1="-12" x2="12" y2="-8" stroke="#FFD9BF" stroke-width="2" stroke-linecap="round"/>
+              <!-- 跑动腿 -->
+              <line x1="-3" y1="-4" x2="-5" y2="2" stroke="#1B3A40" stroke-width="2.4">
+                <animate attributeName="x2" values="-5;-1;-5" dur=".4s" repeatCount="indefinite"/>
+              </line>
+              <line x1="3" y1="-4" x2="5" y2="2" stroke="#1B3A40" stroke-width="2.4">
+                <animate attributeName="x2" values="5;1;5" dur=".4s" repeatCount="indefinite"/>
+              </line>
+            </g>
+          </g>
+          <!-- 跑动的孩子 2（追气球） -->
+          <g>
+            <animateTransform attributeName="transform" type="translate" values="620,288; 540,288; 620,288" dur="5s" repeatCount="indefinite"/>
+            <g>
+              <ellipse cx="0" cy="0" rx="6" ry="4" fill="#000" opacity=".15"/>
+              <circle cx="0" cy="-22" r="7" fill="#FFD9BF" stroke="#1B3A40" stroke-width="1.4"/>
+              <!-- 双辫子 -->
+              <ellipse cx="-7" cy="-22" rx="2" ry="6" fill="#3A2418"/>
+              <ellipse cx="7" cy="-22" rx="2" ry="6" fill="#3A2418"/>
+              <circle cx="-2" cy="-22" r=".9" fill="#1B3A40"/><circle cx="2" cy="-22" r=".9" fill="#1B3A40"/>
+              <path d="M-2 -19 q2 2 4 0" stroke="#1B3A40" stroke-width=".8" fill="none"/>
+              <rect x="-6" y="-15" width="12" height="11" fill="#FF7B6B" stroke="#1B3A40" stroke-width="1.4" rx="2"/>
+              <line x1="3" y1="-12" x2="14" y2="-30" stroke="#1B3A40" stroke-width="1"/>
+              <circle cx="15" cy="-34" r="6" fill="#4FC3DC" stroke="#1B3A40" stroke-width="1.4"/>
+              <line x1="-3" y1="-4" x2="-5" y2="2" stroke="#1B3A40" stroke-width="2.4">
+                <animate attributeName="x2" values="-1;-5;-1" dur=".4s" repeatCount="indefinite"/>
+              </line>
+              <line x1="3" y1="-4" x2="5" y2="2" stroke="#1B3A40" stroke-width="2.4">
+                <animate attributeName="x2" values="1;5;1" dur=".4s" repeatCount="indefinite"/>
+              </line>
+            </g>
+          </g>
+          <!-- 大人散步 -->
+          <g transform="translate(75,295)">
+            <ellipse cx="0" cy="6" rx="9" ry="3" fill="#000" opacity=".15"/>
+            <rect x="-7" y="-20" width="14" height="22" fill="#3D7C9C" stroke="#1B3A40" stroke-width="1.6" rx="3"/>
+            <circle cx="0" cy="-30" r="9" fill="#FFD9BF" stroke="#1B3A40" stroke-width="1.6"/>
+            <path d="M-8 -34 q8 -8 16 0" fill="#3A2418" stroke="#1B3A40" stroke-width="1.4"/>
+            <line x1="-4" y1="2" x2="-5" y2="14" stroke="#1B3A40" stroke-width="2.6"/>
+            <line x1="4" y1="2" x2="5" y2="14" stroke="#1B3A40" stroke-width="2.6"/>
           </g>
           <!-- 河 -->
-          <path d="M-20 340 Q220 326 420 336 Q620 348 820 332 L820 400 L-20 400 Z" fill="url(#t1-river)"/>
+          <path d="M-20 310 Q220 296 420 306 Q620 318 820 302 L820 400 L-20 400 Z" fill="url(#t1-river)"/>
           <!-- 河面波纹 -->
-          <g class="waves"><path d="M40 360 q15 -8 30 0 q15 8 30 0" stroke="#fff" stroke-width="2" fill="none" opacity=".6"/><path d="M520 370 q15 -8 30 0 q15 8 30 0" stroke="#fff" stroke-width="2" fill="none" opacity=".6"/></g>
+          <g class="waves">
+            <path d="M40 330 q15 -8 30 0 q15 8 30 0" stroke="#fff" stroke-width="2" fill="none" opacity=".6"/>
+            <path d="M520 340 q15 -8 30 0 q15 8 30 0" stroke="#fff" stroke-width="2" fill="none" opacity=".6"/>
+            <path d="M280 348 q15 -8 30 0 q15 8 30 0" stroke="#fff" stroke-width="2" fill="none" opacity=".6"/>
+          </g>
           <!-- 小船（在河面上摇晃） -->
-          <g transform="translate(180,360)">
+          <g transform="translate(280,338)">
             <g>
               <path d="M-22 0 Q-18 12 0 12 Q18 12 22 0 Z" fill="#8A5A38" stroke="#2A4A50" stroke-width="2"/>
               <rect x="-2" y="-22" width="3" height="22" fill="#8A5A38"/>
               <path d="M2 -22 L18 -14 L2 -10 Z" fill="#FFCF3F" stroke="#2A4A50" stroke-width="1.5"/>
+              <!-- 船夫 -->
+              <circle cx="0" cy="-4" r="4" fill="#FFD9BF" stroke="#1B3A40" stroke-width="1.2"/>
               <animateTransform attributeName="transform" type="rotate" values="-4;4;-4" dur="3s" repeatCount="indefinite"/>
             </g>
           </g>
           <!-- 鸭子（游动） -->
-          <g transform="translate(640,358)">
-            <ellipse cx="0" cy="0" rx="11" ry="6" fill="#FFE27A" stroke="#2A4A50" stroke-width="1.5"/>
-            <circle cx="10" cy="-4" r="5" fill="#FFE27A" stroke="#2A4A50" stroke-width="1.5"/>
-            <circle cx="11" cy="-5" r="1" fill="#2A4A50"/>
-            <polygon points="13,-3 17,-2 13,-1" fill="#FFA600"/>
+          <g>
+            <ellipse cx="0" cy="0" rx="9" ry="5" fill="#FFE27A" stroke="#2A4A50" stroke-width="1.5"/>
+            <circle cx="8" cy="-3" r="4" fill="#FFE27A" stroke="#2A4A50" stroke-width="1.5"/>
+            <circle cx="9" cy="-4" r=".9" fill="#2A4A50"/>
+            <polygon points="11,-3 14,-2 11,-1" fill="#FFA600"/>
             <animateTransform attributeName="transform" type="translate" values="640,358; 580,358; 640,358" dur="8s" repeatCount="indefinite"/>
+          </g>
+          <!-- 鸭妈妈带小鸭 -->
+          <g>
+            <ellipse cx="0" cy="0" rx="7" ry="4" fill="#FFE27A" stroke="#2A4A50" stroke-width="1.4"/>
+            <circle cx="6" cy="-2" r="3" fill="#FFE27A" stroke="#2A4A50" stroke-width="1.4"/>
+            <animateTransform attributeName="transform" type="translate" values="700,362; 660,362; 700,362" dur="8s" repeatCount="indefinite"/>
           </g>
         </svg>
 
@@ -176,30 +350,140 @@ onUnmounted(() => {
           <path d="M-20 330 Q220 316 420 326 Q620 338 820 322" stroke="#fff" stroke-width="2" fill="none" opacity=".4"/>
         </svg>
 
-        <!-- 帧 3：洪水来袭 -->
+        <!-- 帧 3：洪水来袭 + 摊主损失惨重 -->
         <svg v-else-if="current.id === 'flood'" class="scene" viewBox="0 0 800 400" preserveAspectRatio="xMidYMid meet">
           <defs>
             <linearGradient id="t3-sky" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0" stop-color="#4A5A70"/><stop offset="1" stop-color="#9FA8B6"/>
             </linearGradient>
+            <linearGradient id="t3-flood" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#5BA9C0"/><stop offset="1" stop-color="#1F6B82"/>
+            </linearGradient>
           </defs>
           <rect width="800" height="400" fill="url(#t3-sky)"/>
-          <!-- 灰云 -->
-          <g class="cloud-l"><ellipse cx="0" cy="0" rx="50" ry="16" fill="#5A6878"/><circle cx="-22" cy="-6" r="16" fill="#5A6878"/><circle cx="20" cy="-10" r="20" fill="#5A6878"/></g>
-          <!-- 远山（轮廓） -->
-          <path d="M-20 220 Q200 160 400 210 Q600 150 820 200 L820 250 L-20 250 Z" fill="#4A5A70"/>
+          <!-- 厚云 + 微闪电 -->
+          <g>
+            <ellipse cx="160" cy="60" rx="60" ry="18" fill="#5A6878"/>
+            <circle cx="120" cy="48" r="22" fill="#5A6878"/><circle cx="200" cy="42" r="26" fill="#5A6878"/>
+            <animateTransform attributeName="transform" type="translate" values="0,0; 20,0; 0,0" dur="6s" repeatCount="indefinite"/>
+          </g>
+          <g>
+            <ellipse cx="610" cy="70" rx="70" ry="20" fill="#5A6878"/>
+            <circle cx="560" cy="55" r="24" fill="#5A6878"/><circle cx="660" cy="48" r="28" fill="#5A6878"/>
+            <animateTransform attributeName="transform" type="translate" values="0,0; -20,0; 0,0" dur="7s" repeatCount="indefinite"/>
+          </g>
+          <path d="M380 80 L368 130 L388 130 L376 180 L408 120 L388 120 Z" fill="#FFD23F" stroke="#FFE27A" stroke-width="1.5">
+            <animate attributeName="opacity" values="0; 0; 1; 0; 0" dur="3s" repeatCount="indefinite"/>
+          </path>
+          <!-- 雨 -->
+          <g>
+            <line v-for="i in 30" :key="i" :x1="i*28 + (i%3)*4" y1="100" :x2="i*28 + (i%3)*4 - 8" y2="160" stroke="#9FD9EC" stroke-width="1.8" opacity=".6">
+              <animate attributeName="y1" values="80; 200" :dur="`${0.5 + (i%4)*0.15}s`" repeatCount="indefinite"/>
+              <animate attributeName="y2" values="140; 260" :dur="`${0.5 + (i%4)*0.15}s`" repeatCount="indefinite"/>
+            </line>
+          </g>
+          <!-- 远山 -->
+          <path d="M-20 200 Q200 150 400 195 Q600 140 820 190 L820 230 L-20 230 Z" fill="#4A5A70"/>
           <!-- 镇子被水围 -->
-          <g transform="translate(280,230)"><rect x="-30" y="0" width="60" height="50" fill="#FFFDF6" stroke="#1B3A40" stroke-width="2.2"/><path d="M-38 0 L0 -30 L38 0 Z" fill="#E2574C" stroke="#1B3A40" stroke-width="2.2"/></g>
-          <g transform="translate(420,228)"><rect x="-34" y="0" width="68" height="52" fill="#FFF3D8" stroke="#1B3A40" stroke-width="2.2"/><path d="M-42 0 L0 -30 L42 0 Z" fill="#D8564A" stroke="#1B3A40" stroke-width="2.2"/></g>
-          <g transform="translate(540,232)"><rect x="-26" y="0" width="52" height="48" fill="#FFFDF6" stroke="#1B3A40" stroke-width="2.2"/><path d="M-34 0 L0 -26 L34 0 Z" fill="#F2A03D" stroke="#1B3A40" stroke-width="2.2"/></g>
+          <g transform="translate(170,228)"><rect x="-26" y="0" width="52" height="48" fill="#9FA8B0" stroke="#1B3A40" stroke-width="2.2"/><path d="M-32 0 L0 -28 L32 0 Z" fill="#7A3A36" stroke="#1B3A40" stroke-width="2.2"/></g>
+          <g transform="translate(280,218)"><rect x="-30" y="0" width="60" height="56" fill="#9FA8B0" stroke="#1B3A40" stroke-width="2.4"/><path d="M-38 0 L0 -32 L38 0 Z" fill="#7A3A36" stroke="#1B3A40" stroke-width="2.4"/><rect x="-6" y="20" width="12" height="20" fill="#3A2418"/></g>
+          <g transform="translate(420,216)"><rect x="-34" y="0" width="68" height="58" fill="#9FA8B0" stroke="#1B3A40" stroke-width="2.4"/><path d="M-42 0 L0 -34 L42 0 Z" fill="#7A4828" stroke="#1B3A40" stroke-width="2.4"/></g>
+          <g transform="translate(560,222)"><rect x="-26" y="0" width="52" height="54" fill="#9FA8B0" stroke="#1B3A40" stroke-width="2.4"/><path d="M-34 0 L0 -28 L34 0 Z" fill="#5A4828" stroke="#1B3A40" stroke-width="2.4"/></g>
+          <g transform="translate(660,224)"><rect x="-22" y="0" width="44" height="48" fill="#9FA8B0" stroke="#1B3A40" stroke-width="2.2"/><path d="M-28 0 L0 -24 L28 0 Z" fill="#7A4828" stroke="#1B3A40" stroke-width="2.2"/></g>
+          <!-- 摊位被冲歪（残骸） -->
+          <g transform="translate(380,278)" style="opacity:.85">
+            <path d="M-30 0 L26 -8 L30 -2 L-26 6 Z" fill="#E2574C" stroke="#1B3A40" stroke-width="1.6"/>
+            <rect x="-10" y="-2" width="6" height="20" fill="#8A5A38" stroke="#1B3A40" stroke-width="1.4" transform="rotate(20)"/>
+            <animateTransform attributeName="transform" type="translate" values="380,278; 385,276; 380,278" dur="2s" repeatCount="indefinite"/>
+          </g>
           <!-- 大水位（漫到房子腰部） -->
-          <path class="flood-water" d="M-20 290 Q220 282 420 286 Q620 290 820 282 L820 400 L-20 400 Z" fill="#2A9DB5" opacity=".85"/>
-          <!-- 漂浮的摊位货物（西瓜/木箱） -->
-          <g class="float-1"><circle cx="180" cy="288" r="10" fill="#3FA56F" stroke="#1B3A40" stroke-width="1.5"/><path d="M170 288 q10 -4 20 0" stroke="#1B3A40" stroke-width="1" fill="none"/></g>
-          <g class="float-2"><rect x="600" y="280" width="22" height="14" fill="#C9935C" stroke="#1B3A40" stroke-width="1.5"/></g>
-          <g class="float-3"><rect x="350" y="288" width="18" height="12" fill="#8A5A38" stroke="#1B3A40" stroke-width="1.5"/></g>
-          <!-- 哭脸表情符号 -->
-          <text x="400" y="180" font-size="48" text-anchor="middle" class="shake-text">😱</text>
+          <path class="flood-water" d="M-20 270 Q220 262 420 266 Q620 270 820 262 L820 400 L-20 400 Z" fill="url(#t3-flood)" opacity=".92"/>
+          <!-- 水面波浪线 -->
+          <path d="M-20 290 q40 -8 80 0 q40 8 80 0 q40 -8 80 0 q40 8 80 0 q40 -8 80 0 q40 8 80 0 q40 -8 80 0 q40 8 80 0 q40 -8 80 0 q40 8 80 0 q40 -8 80 0" stroke="#fff" stroke-width="1.5" fill="none" opacity=".4">
+            <animate attributeName="d" values="M-20 290 q40 -8 80 0 q40 8 80 0 q40 -8 80 0 q40 8 80 0 q40 -8 80 0 q40 8 80 0 q40 -8 80 0 q40 8 80 0 q40 -8 80 0 q40 8 80 0 q40 -8 80 0; M-20 290 q40 8 80 0 q40 -8 80 0 q40 8 80 0 q40 -8 80 0 q40 8 80 0 q40 -8 80 0 q40 8 80 0 q40 -8 80 0 q40 8 80 0 q40 -8 80 0 q40 8 80 0; M-20 290 q40 -8 80 0 q40 8 80 0 q40 -8 80 0 q40 8 80 0 q40 -8 80 0 q40 8 80 0 q40 -8 80 0 q40 8 80 0 q40 -8 80 0 q40 8 80 0 q40 -8 80 0" dur="3s" repeatCount="indefinite"/>
+          </path>
+          <!-- 摊主（左前景，手抱头，崩溃跪坐） -->
+          <g transform="translate(140,300)">
+            <ellipse cx="0" cy="32" rx="26" ry="5" fill="#000" opacity=".25"/>
+            <!-- 身体 -->
+            <path d="M-22 0 Q-26 30 -18 32 L18 32 Q26 30 22 0 Z" fill="#7A5836" stroke="#1B3A40" stroke-width="2"/>
+            <!-- 头 -->
+            <circle cx="0" cy="-22" r="16" fill="#FFD9BF" stroke="#1B3A40" stroke-width="2"/>
+            <path d="M-14 -32 q14 -12 28 0" fill="#3A2418" stroke="#1B3A40" stroke-width="1.6"/>
+            <!-- 哭眼 -->
+            <path d="M-7 -22 q-2 -2 0 -4 M-7 -26 q2 2 0 4" stroke="#1B3A40" stroke-width="1.4" fill="none"/>
+            <path d="M7 -22 q2 -2 0 -4 M7 -26 q-2 2 0 4" stroke="#1B3A40" stroke-width="1.4" fill="none"/>
+            <line x1="-6" y1="-16" x2="-7" y2="-8" stroke="#4FC3DC" stroke-width="2"/>
+            <line x1="6" y1="-16" x2="7" y2="-8" stroke="#4FC3DC" stroke-width="2"/>
+            <path d="M-4 -14 q4 4 8 0" stroke="#1B3A40" stroke-width="1.4" fill="none" transform="rotate(180)"/>
+            <!-- 双手抱头 -->
+            <path d="M-22 -12 q-14 -10 -2 -22 q4 -4 12 0" stroke="#1B3A40" stroke-width="2" fill="#FFD9BF"/>
+            <path d="M22 -12 q14 -10 2 -22 q-4 -4 -12 0" stroke="#1B3A40" stroke-width="2" fill="#FFD9BF"/>
+            <animateTransform attributeName="transform" type="translate" values="140,300; 140,304; 140,300" dur="1.6s" repeatCount="indefinite"/>
+          </g>
+          <!-- 漂浮的糖葫芦串 -->
+          <g>
+            <line x1="0" y1="0" x2="0" y2="22" stroke="#8A5A38" stroke-width="1.5"/>
+            <circle cx="0" cy="2" r="4" fill="#E2574C" stroke="#1B3A40" stroke-width="1"/>
+            <circle cx="0" cy="10" r="4" fill="#E2574C" stroke="#1B3A40" stroke-width="1"/>
+            <circle cx="0" cy="18" r="4" fill="#E2574C" stroke="#1B3A40" stroke-width="1"/>
+            <animateTransform attributeName="transform" type="translate" values="240,288; 256,294; 240,288" dur="3s" repeatCount="indefinite"/>
+            <animateTransform attributeName="transform" type="rotate" values="-10;10;-10" dur="3s" repeatCount="indefinite" additive="sum"/>
+          </g>
+          <!-- 漂浮的西瓜 1 -->
+          <g>
+            <ellipse cx="0" cy="0" rx="14" ry="10" fill="#3FA56F" stroke="#1B3A40" stroke-width="1.8"/>
+            <path d="M-12 -2 q12 -4 24 0 M-12 2 q12 -4 24 0" stroke="#1B3A40" stroke-width="1" fill="none" transform="translate(-12,0)"/>
+            <animateTransform attributeName="transform" type="translate" values="320,290; 336,296; 320,290" dur="4s" repeatCount="indefinite"/>
+            <animateTransform attributeName="transform" type="rotate" values="-15;15;-15" dur="4s" repeatCount="indefinite" additive="sum"/>
+          </g>
+          <!-- 漂浮的西瓜 2 -->
+          <g>
+            <ellipse cx="0" cy="0" rx="10" ry="7" fill="#3FA56F" stroke="#1B3A40" stroke-width="1.6"/>
+            <animateTransform attributeName="transform" type="translate" values="490,294; 504,302; 490,294" dur="3.6s" repeatCount="indefinite"/>
+          </g>
+          <!-- 漂浮的木箱 -->
+          <g>
+            <rect x="-16" y="-10" width="32" height="20" fill="#C9935C" stroke="#1B3A40" stroke-width="1.8"/>
+            <line x1="-16" y1="0" x2="16" y2="0" stroke="#1B3A40" stroke-width="1.2"/>
+            <line x1="0" y1="-10" x2="0" y2="10" stroke="#1B3A40" stroke-width="1.2"/>
+            <animateTransform attributeName="transform" type="translate" values="610,288; 626,294; 610,288" dur="4.2s" repeatCount="indefinite"/>
+            <animateTransform attributeName="transform" type="rotate" values="-8;8;-8" dur="4.2s" repeatCount="indefinite" additive="sum"/>
+          </g>
+          <!-- 漂浮的衣服 -->
+          <g>
+            <path d="M-10 0 L-14 10 L14 10 L10 0 Q5 -6 -5 -6 Z" fill="#FF7B6B" stroke="#1B3A40" stroke-width="1.6"/>
+            <animateTransform attributeName="transform" type="translate" values="690,300; 706,306; 690,300" dur="3.4s" repeatCount="indefinite"/>
+            <animateTransform attributeName="transform" type="rotate" values="-12;12;-12" dur="3.4s" repeatCount="indefinite" additive="sum"/>
+          </g>
+          <!-- 漂浮的草帽 -->
+          <g>
+            <path d="M-18 0 L18 0 L14 -4 L-14 -4 Z" fill="#D8A85A" stroke="#1B3A40" stroke-width="1.6"/>
+            <ellipse cx="0" cy="-4" rx="8" ry="5" fill="#D8A85A" stroke="#1B3A40" stroke-width="1.6"/>
+            <animateTransform attributeName="transform" type="translate" values="200,295; 216,300; 200,295" dur="3.2s" repeatCount="indefinite"/>
+          </g>
+          <!-- 摊主 2（右后景，挥手呼救） -->
+          <g transform="translate(680,320)">
+            <ellipse cx="0" cy="20" rx="14" ry="3" fill="#000" opacity=".2"/>
+            <rect x="-10" y="-10" width="20" height="28" fill="#3D7C9C" stroke="#1B3A40" stroke-width="1.6" rx="3"/>
+            <circle cx="0" cy="-22" r="10" fill="#FFD9BF" stroke="#1B3A40" stroke-width="1.6"/>
+            <path d="M-9 -28 q9 -8 18 0" fill="#3A2418" stroke="#1B3A40" stroke-width="1.4"/>
+            <circle cx="-3" cy="-22" r="1" fill="#1B3A40"/><circle cx="3" cy="-22" r="1" fill="#1B3A40"/>
+            <path d="M-3 -18 q3 -2 6 0" stroke="#1B3A40" stroke-width="1.2" fill="none"/>
+            <!-- 挥手 -->
+            <line x1="-8" y1="-5" x2="-18" y2="-22" stroke="#1B3A40" stroke-width="3" stroke-linecap="round"/>
+            <line x1="8" y1="-5" x2="20" y2="-26" stroke="#1B3A40" stroke-width="3" stroke-linecap="round">
+              <animate attributeName="x2" values="20;14;20" dur=".6s" repeatCount="indefinite"/>
+              <animate attributeName="y2" values="-26;-32;-26" dur=".6s" repeatCount="indefinite"/>
+            </line>
+            <!-- 救命气泡 -->
+            <g transform="translate(28,-32)">
+              <ellipse cx="0" cy="0" rx="20" ry="10" fill="#fff" stroke="#1B3A40" stroke-width="1.6"/>
+              <text x="0" y="4" font-size="11" font-weight="900" text-anchor="middle" fill="#C0392B">救命！</text>
+              <animateTransform attributeName="transform" type="scale" values="1; 1.12; 1" dur="1s" repeatCount="indefinite" additive="sum"/>
+              <animateTransform attributeName="transform" type="translate" values="28,-32" dur="1s" repeatCount="indefinite"/>
+            </g>
+          </g>
         </svg>
 
         <!-- 帧 4：镇长 + 云博士 -->
@@ -257,57 +541,127 @@ onUnmounted(() => {
 
         <!-- 帧 5：收集数据 -->
         <svg v-else-if="current.id === 'collect'" class="scene" viewBox="0 0 800 400" preserveAspectRatio="xMidYMid meet">
-          <rect width="800" height="400" fill="#FFFEF6"/>
-          <!-- 中央背包 -->
-          <g transform="translate(400,260)">
-            <ellipse cx="0" cy="58" rx="80" ry="10" fill="#000" opacity=".15"/>
-            <path d="M-50 -10 L-50 80 Q-50 90 -40 90 L40 90 Q50 90 50 80 L50 -10 Z" fill="#C9935C" stroke="#1B3A40" stroke-width="3"/>
-            <path d="M-30 -10 Q-30 -40 0 -40 Q30 -40 30 -10" fill="none" stroke="#1B3A40" stroke-width="3"/>
-            <rect x="-30" y="30" width="60" height="20" fill="#A06F47" stroke="#1B3A40" stroke-width="2"/>
-            <text x="0" y="20" font-size="32" text-anchor="middle">🎒</text>
-            <animateTransform attributeName="transform" type="translate" values="400,260; 400,254; 400,260" dur="2s" repeatCount="indefinite"/>
+          <defs>
+            <linearGradient id="t5-bg" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#E8F4FF"/><stop offset="1" stop-color="#FFFEF6"/>
+            </linearGradient>
+          </defs>
+          <rect width="800" height="400" fill="url(#t5-bg)"/>
+          <!-- 草地 -->
+          <path d="M-20 320 Q400 308 820 320 L820 400 L-20 400 Z" fill="#9FD480" opacity=".5"/>
+
+          <!-- 左上：降雨量数据源（云+量杯） -->
+          <g transform="translate(140,90)">
+            <rect x="-58" y="-30" width="116" height="120" fill="#fff" stroke="#1B3A40" stroke-width="2.4" rx="10"/>
+            <text x="0" y="-14" font-size="12" font-weight="900" text-anchor="middle" fill="#1B3A40">📊 降雨量</text>
+            <!-- 云 -->
+            <g transform="translate(0,16)">
+              <ellipse cx="0" cy="0" rx="22" ry="8" fill="#4FC3DC"/>
+              <circle cx="-12" cy="-4" r="9" fill="#4FC3DC"/>
+              <circle cx="10" cy="-6" r="11" fill="#4FC3DC"/>
+              <!-- 雨滴 -->
+              <line v-for="i in 5" :key="i" :x1="-15+i*6" y1="8" :x2="-16+i*6" y2="18" stroke="#4FC3DC" stroke-width="2">
+                <animate attributeName="y1" values="6;12" :dur="`${0.5+i*0.1}s`" repeatCount="indefinite"/>
+                <animate attributeName="y2" values="16;22" :dur="`${0.5+i*0.1}s`" repeatCount="indefinite"/>
+              </line>
+            </g>
+            <!-- 量杯 -->
+            <g transform="translate(0,52)">
+              <rect x="-12" y="-2" width="24" height="22" fill="none" stroke="#1B3A40" stroke-width="2"/>
+              <rect x="-10" y="8" width="20" height="12" fill="#4FC3DC"/>
+              <text x="20" y="14" font-size="10" font-weight="900" fill="#1B3A40">32mm</text>
+            </g>
+            <animateTransform attributeName="transform" type="translate" values="140,90; 140,86; 140,90" dur="2.2s" repeatCount="indefinite"/>
           </g>
-          <!-- 飞向背包的数据元素 -->
+
+          <!-- 右上：水位计 -->
+          <g transform="translate(660,90)">
+            <rect x="-58" y="-30" width="116" height="120" fill="#fff" stroke="#1B3A40" stroke-width="2.4" rx="10"/>
+            <text x="0" y="-14" font-size="12" font-weight="900" text-anchor="middle" fill="#1B3A40">📏 河水位</text>
+            <!-- 河 + 标尺 -->
+            <rect x="-30" y="0" width="60" height="80" fill="#BDE9FF" stroke="#1B3A40" stroke-width="1.6"/>
+            <rect x="-30" y="40" width="60" height="40" fill="#4FC3DC">
+              <animate attributeName="y" values="40;30;40" dur="2s" repeatCount="indefinite"/>
+              <animate attributeName="height" values="40;50;40" dur="2s" repeatCount="indefinite"/>
+            </rect>
+            <rect x="14" y="0" width="6" height="80" fill="#fff" stroke="#1B3A40" stroke-width="1.4"/>
+            <line v-for="i in 5" :key="i" x1="14" :y1="i*16" x2="20" :y2="i*16" stroke="#1B3A40" stroke-width="1"/>
+            <text x="36" y="46" font-size="10" font-weight="900" fill="#1B3A40">4.2m</text>
+            <animateTransform attributeName="transform" type="translate" values="660,90; 660,86; 660,90" dur="2.4s" repeatCount="indefinite"/>
+          </g>
+
+          <!-- 左下：上游放水（水库闸门） -->
+          <g transform="translate(140,260)">
+            <rect x="-58" y="-30" width="116" height="100" fill="#fff" stroke="#1B3A40" stroke-width="2.4" rx="10"/>
+            <text x="0" y="-14" font-size="12" font-weight="900" text-anchor="middle" fill="#1B3A40">🚧 上游放水</text>
+            <!-- 大坝 -->
+            <path d="M-40 0 L-40 50 L40 50 L40 0 L20 0 L20 30 L-20 30 L-20 0 Z" fill="#9AA6B4" stroke="#1B3A40" stroke-width="2"/>
+            <rect x="-20" y="0" width="40" height="30" fill="#000" opacity=".15"/>
+            <!-- 喷出的水流 -->
+            <path d="M-20 30 q-6 8 -10 24" stroke="#4FC3DC" stroke-width="3" fill="none">
+              <animate attributeName="stroke-dasharray" values="0 40; 40 0" dur="1s" repeatCount="indefinite"/>
+            </path>
+            <path d="M20 30 q6 8 10 24" stroke="#4FC3DC" stroke-width="3" fill="none">
+              <animate attributeName="stroke-dasharray" values="0 40; 40 0" dur="1s" repeatCount="indefinite"/>
+            </path>
+            <text x="0" y="68" font-size="10" font-weight="900" text-anchor="middle" fill="#1B3A40">是 / 否</text>
+            <animateTransform attributeName="transform" type="translate" values="140,260; 140,256; 140,260" dur="2s" repeatCount="indefinite"/>
+          </g>
+
+          <!-- 右下：地形海拔 -->
+          <g transform="translate(660,260)">
+            <rect x="-58" y="-30" width="116" height="100" fill="#fff" stroke="#1B3A40" stroke-width="2.4" rx="10"/>
+            <text x="0" y="-14" font-size="12" font-weight="900" text-anchor="middle" fill="#1B3A40">⛰️ 地形海拔</text>
+            <!-- 等高线山 -->
+            <path d="M-44 50 Q-20 0 0 0 Q20 0 44 50 Z" fill="#FFCF3F" stroke="#1B3A40" stroke-width="2"/>
+            <path d="M-30 50 Q-12 10 0 10 Q12 10 30 50" fill="none" stroke="#B97E00" stroke-width="1.4"/>
+            <path d="M-20 50 Q-8 24 0 24 Q8 24 20 50" fill="none" stroke="#B97E00" stroke-width="1.4"/>
+            <animateTransform attributeName="transform" type="translate" values="660,260; 660,256; 660,260" dur="2.4s" repeatCount="indefinite"/>
+          </g>
+
+          <!-- 中央：背包 + AI 学习中 -->
           <g>
-            <circle r="32" fill="#DCEEFF" stroke="#1B3A40" stroke-width="2.5"/>
-            <text y="10" font-size="32" text-anchor="middle">🌧️</text>
-            <text y="-40" font-size="11" text-anchor="middle" font-weight="900" fill="#1B3A40">降雨量</text>
-            <animateTransform attributeName="transform" type="translate" values="120,80; 380,250; 120,80" dur="5s" repeatCount="indefinite"/>
+            <ellipse cx="0" cy="60" rx="70" ry="9" fill="#000" opacity=".15"/>
+            <path d="M-44 -8 L-44 70 Q-44 80 -34 80 L34 80 Q44 80 44 70 L44 -8 Z" fill="#C9935C" stroke="#1B3A40" stroke-width="3"/>
+            <path d="M-26 -8 Q-26 -36 0 -36 Q26 -36 26 -8" fill="none" stroke="#1B3A40" stroke-width="3"/>
+            <rect x="-26" y="26" width="52" height="18" fill="#A06F47" stroke="#1B3A40" stroke-width="2"/>
+            <circle cx="-14" cy="35" r="2" fill="#1B3A40"/><circle cx="14" cy="35" r="2" fill="#1B3A40"/>
+            <text x="0" y="10" font-size="22" font-weight="900" text-anchor="middle" fill="#fff">AI</text>
+            <animateTransform attributeName="transform" type="translate" values="400,220; 400,214; 400,220" dur="2s" repeatCount="indefinite"/>
           </g>
-          <g>
-            <circle r="32" fill="#FFF3C9" stroke="#1B3A40" stroke-width="2.5"/>
-            <text y="10" font-size="32" text-anchor="middle">📏</text>
-            <text y="-40" font-size="11" text-anchor="middle" font-weight="900" fill="#1B3A40">水位计</text>
-            <animateTransform attributeName="transform" type="translate" values="680,90; 420,250; 680,90" dur="5.4s" repeatCount="indefinite"/>
+
+          <!-- 数据流向 AI 背包的发光路径 -->
+          <g fill="none" stroke="#52C474" stroke-width="2.4" opacity=".6">
+            <path d="M180 130 Q280 180 360 220" stroke-dasharray="6 4">
+              <animate attributeName="stroke-dashoffset" values="0;-30" dur="1.4s" repeatCount="indefinite"/>
+            </path>
+            <path d="M620 130 Q520 180 440 220" stroke-dasharray="6 4">
+              <animate attributeName="stroke-dashoffset" values="0;-30" dur="1.4s" repeatCount="indefinite"/>
+            </path>
+            <path d="M180 290 Q280 260 360 240" stroke-dasharray="6 4">
+              <animate attributeName="stroke-dashoffset" values="0;-30" dur="1.4s" repeatCount="indefinite"/>
+            </path>
+            <path d="M620 290 Q520 260 440 240" stroke-dasharray="6 4">
+              <animate attributeName="stroke-dashoffset" values="0;-30" dur="1.4s" repeatCount="indefinite"/>
+            </path>
           </g>
-          <g>
-            <circle r="32" fill="#E2F6D3" stroke="#1B3A40" stroke-width="2.5"/>
-            <text y="10" font-size="32" text-anchor="middle">🗺️</text>
-            <text y="48" font-size="11" text-anchor="middle" font-weight="900" fill="#1B3A40">地形图</text>
-            <animateTransform attributeName="transform" type="translate" values="140,300; 380,280; 140,300" dur="4.6s" repeatCount="indefinite"/>
+
+          <!-- 干扰项（被叉）：糖葫芦销量、膝盖、做梦 -->
+          <g transform="translate(290,310)">
+            <rect x="-46" y="-18" width="92" height="36" fill="#FFE0E6" stroke="#1B3A40" stroke-width="2" rx="8"/>
+            <text x="-32" y="6" font-size="20" text-anchor="middle">🍡</text>
+            <text x="14" y="0" font-size="10" font-weight="900" text-anchor="middle" fill="#1B3A40">糖葫芦销量</text>
+            <text x="14" y="14" font-size="9" fill="#C0392B" text-anchor="middle">和洪水无关</text>
+            <line x1="-46" y1="-18" x2="46" y2="18" stroke="#E2574C" stroke-width="4"/>
+            <animateTransform attributeName="transform" type="rotate" values="-3 290 310; 3 290 310; -3 290 310" dur="1.2s" repeatCount="indefinite"/>
           </g>
-          <g>
-            <circle r="32" fill="#D7F2F7" stroke="#1B3A40" stroke-width="2.5"/>
-            <text y="10" font-size="32" text-anchor="middle">🏞️</text>
-            <text y="48" font-size="11" text-anchor="middle" font-weight="900" fill="#1B3A40">水库放水</text>
-            <animateTransform attributeName="transform" type="translate" values="660,310; 420,280; 660,310" dur="5.8s" repeatCount="indefinite"/>
-          </g>
-          <!-- 干扰项被叉（晃动） -->
-          <g transform="translate(260,160)">
-            <circle r="28" fill="#FFE0E6" stroke="#1B3A40" stroke-width="2.5"/>
-            <text y="8" font-size="26" text-anchor="middle">🍡</text>
-            <line x1="-22" y1="-22" x2="22" y2="22" stroke="#E2574C" stroke-width="5"/>
-            <line x1="22" y1="-22" x2="-22" y2="22" stroke="#E2574C" stroke-width="5"/>
-            <animateTransform attributeName="transform" type="rotate" values="-10 260 160; 10 260 160; -10 260 160" dur="1s" repeatCount="indefinite" additive="sum"/>
-            <animateTransform attributeName="transform" type="translate" values="260,160" dur="1s" repeatCount="indefinite"/>
-          </g>
-          <g transform="translate(540,170)">
-            <circle r="28" fill="#FFE4D1" stroke="#1B3A40" stroke-width="2.5"/>
-            <text y="8" font-size="26" text-anchor="middle">🦵</text>
-            <line x1="-22" y1="-22" x2="22" y2="22" stroke="#E2574C" stroke-width="5"/>
-            <line x1="22" y1="-22" x2="-22" y2="22" stroke="#E2574C" stroke-width="5"/>
-            <animateTransform attributeName="transform" type="rotate" values="10 540 170; -10 540 170; 10 540 170" dur="1.1s" repeatCount="indefinite" additive="sum"/>
-            <animateTransform attributeName="transform" type="translate" values="540,170" dur="1.1s" repeatCount="indefinite"/>
+          <g transform="translate(510,310)">
+            <rect x="-46" y="-18" width="92" height="36" fill="#FFE4D1" stroke="#1B3A40" stroke-width="2" rx="8"/>
+            <text x="-32" y="6" font-size="20" text-anchor="middle">🦵</text>
+            <text x="14" y="0" font-size="10" font-weight="900" text-anchor="middle" fill="#1B3A40">膝盖疼</text>
+            <text x="14" y="14" font-size="9" fill="#C0392B" text-anchor="middle">说不准</text>
+            <line x1="-46" y1="-18" x2="46" y2="18" stroke="#E2574C" stroke-width="4"/>
+            <animateTransform attributeName="transform" type="rotate" values="3 510 310; -3 510 310; 3 510 310" dur="1.3s" repeatCount="indefinite"/>
           </g>
         </svg>
 
@@ -353,46 +707,111 @@ onUnmounted(() => {
           <g class="sparkle"><text x="650" y="100" font-size="32">✨</text><text x="120" y="350" font-size="28">✨</text></g>
         </svg>
 
-        <!-- 帧 7：训练模型 神经网络 -->
+        <!-- 帧 7：训练模型 神经网络 + 80/20 切分 -->
         <svg v-else-if="current.id === 'train'" class="scene" viewBox="0 0 800 400" preserveAspectRatio="xMidYMid meet">
           <rect width="800" height="400" fill="#FFF1F5"/>
-          <!-- 数据从左输入 -->
-          <g class="nn-input-1" transform="translate(80,120)"><rect width="60" height="30" fill="#DCEEFF" stroke="#1B3A40" stroke-width="2" rx="6"/><text x="30" y="20" font-size="13" font-weight="900" text-anchor="middle">雨量</text></g>
-          <g class="nn-input-2" transform="translate(80,200)"><rect width="60" height="30" fill="#FFF3C9" stroke="#1B3A40" stroke-width="2" rx="6"/><text x="30" y="20" font-size="13" font-weight="900" text-anchor="middle">水位</text></g>
-          <g class="nn-input-3" transform="translate(80,280)"><rect width="60" height="30" fill="#D7F2F7" stroke="#1B3A40" stroke-width="2" rx="6"/><text x="30" y="20" font-size="13" font-weight="900" text-anchor="middle">放水</text></g>
-          <!-- 神经元 (3 列 × 各 4-3-1 个) -->
+          <!-- 标题：训练集 + 测试集 -->
+          <g transform="translate(400,32)">
+            <rect x="-180" y="-18" width="360" height="32" fill="#fff" stroke="#1B3A40" stroke-width="2" rx="8"/>
+            <text x="0" y="4" font-size="14" font-weight="900" text-anchor="middle" fill="#1B3A40">数据分两份：80% 给 AI 学，20% 藏起来考它</text>
+          </g>
+          <!-- 数据切分条 -->
+          <g transform="translate(80,70)">
+            <rect width="240" height="22" fill="#52C474" stroke="#1B3A40" stroke-width="2" rx="4"/>
+            <text x="120" y="16" font-size="12" font-weight="900" text-anchor="middle" fill="#fff">训练集 80%</text>
+            <rect x="240" width="60" height="22" fill="#FF9F1C" stroke="#1B3A40" stroke-width="2" rx="4"/>
+            <text x="270" y="16" font-size="11" font-weight="900" text-anchor="middle" fill="#fff">考题 20%</text>
+          </g>
+          <!-- 训练数据小方块（飞向网络） -->
+          <g>
+            <rect width="14" height="14" fill="#52C474" stroke="#1B3A40" stroke-width="1.4" rx="2"/>
+            <animateTransform attributeName="transform" type="translate" values="100,98; 220,180; 100,98" dur="3s" repeatCount="indefinite"/>
+          </g>
+          <g>
+            <rect width="14" height="14" fill="#52C474" stroke="#1B3A40" stroke-width="1.4" rx="2"/>
+            <animateTransform attributeName="transform" type="translate" values="160,98; 220,240; 160,98" dur="3.4s" repeatCount="indefinite"/>
+          </g>
+          <g>
+            <rect width="14" height="14" fill="#52C474" stroke="#1B3A40" stroke-width="1.4" rx="2"/>
+            <animateTransform attributeName="transform" type="translate" values="220,98; 220,300; 220,98" dur="3.8s" repeatCount="indefinite"/>
+          </g>
+          <!-- 数据从左输入（三个特征） -->
+          <g transform="translate(80,150)"><rect width="60" height="28" fill="#DCEEFF" stroke="#1B3A40" stroke-width="2" rx="6"/><text x="30" y="19" font-size="12" font-weight="900" text-anchor="middle">雨量</text></g>
+          <g transform="translate(80,220)"><rect width="60" height="28" fill="#FFF3C9" stroke="#1B3A40" stroke-width="2" rx="6"/><text x="30" y="19" font-size="12" font-weight="900" text-anchor="middle">水位</text></g>
+          <g transform="translate(80,290)"><rect width="60" height="28" fill="#D7F2F7" stroke="#1B3A40" stroke-width="2" rx="6"/><text x="30" y="19" font-size="12" font-weight="900" text-anchor="middle">放水</text></g>
+          <!-- 神经元 -->
           <g class="layer-1">
-            <circle cx="280" cy="100" r="24" fill="#fff" stroke="#1B3A40" stroke-width="2.5"/>
-            <circle cx="280" cy="170" r="24" fill="#fff" stroke="#1B3A40" stroke-width="2.5"/>
-            <circle cx="280" cy="240" r="24" fill="#fff" stroke="#1B3A40" stroke-width="2.5"/>
-            <circle cx="280" cy="310" r="24" fill="#fff" stroke="#1B3A40" stroke-width="2.5"/>
+            <circle cx="260" cy="140" r="20" fill="#fff" stroke="#1B3A40" stroke-width="2.4">
+              <animate attributeName="r" values="20;24;20" dur="1.4s" repeatCount="indefinite"/>
+              <animate attributeName="fill" values="#fff;#FFE4D1;#fff" dur="1.4s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="260" cy="200" r="20" fill="#fff" stroke="#1B3A40" stroke-width="2.4">
+              <animate attributeName="r" values="20;24;20" dur="1.4s" begin=".2s" repeatCount="indefinite"/>
+              <animate attributeName="fill" values="#fff;#FFE4D1;#fff" dur="1.4s" begin=".2s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="260" cy="260" r="20" fill="#fff" stroke="#1B3A40" stroke-width="2.4">
+              <animate attributeName="r" values="20;24;20" dur="1.4s" begin=".4s" repeatCount="indefinite"/>
+              <animate attributeName="fill" values="#fff;#FFE4D1;#fff" dur="1.4s" begin=".4s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="260" cy="320" r="20" fill="#fff" stroke="#1B3A40" stroke-width="2.4">
+              <animate attributeName="r" values="20;24;20" dur="1.4s" begin=".6s" repeatCount="indefinite"/>
+              <animate attributeName="fill" values="#fff;#FFE4D1;#fff" dur="1.4s" begin=".6s" repeatCount="indefinite"/>
+            </circle>
           </g>
           <g class="layer-2">
-            <circle cx="460" cy="150" r="24" fill="#fff" stroke="#1B3A40" stroke-width="2.5"/>
-            <circle cx="460" cy="220" r="24" fill="#fff" stroke="#1B3A40" stroke-width="2.5"/>
-            <circle cx="460" cy="290" r="24" fill="#fff" stroke="#1B3A40" stroke-width="2.5"/>
+            <circle cx="420" cy="180" r="20" fill="#fff" stroke="#1B3A40" stroke-width="2.4">
+              <animate attributeName="r" values="20;24;20" dur="1.4s" begin=".3s" repeatCount="indefinite"/>
+              <animate attributeName="fill" values="#fff;#FFE4D1;#fff" dur="1.4s" begin=".3s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="420" cy="240" r="20" fill="#fff" stroke="#1B3A40" stroke-width="2.4">
+              <animate attributeName="r" values="20;24;20" dur="1.4s" begin=".5s" repeatCount="indefinite"/>
+              <animate attributeName="fill" values="#fff;#FFE4D1;#fff" dur="1.4s" begin=".5s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="420" cy="300" r="20" fill="#fff" stroke="#1B3A40" stroke-width="2.4">
+              <animate attributeName="r" values="20;24;20" dur="1.4s" begin=".7s" repeatCount="indefinite"/>
+              <animate attributeName="fill" values="#fff;#FFE4D1;#fff" dur="1.4s" begin=".7s" repeatCount="indefinite"/>
+            </circle>
           </g>
           <g class="layer-3">
-            <circle cx="620" cy="210" r="30" fill="#FFD23F" stroke="#1B3A40" stroke-width="3"/>
-            <text x="620" y="215" font-size="12" font-weight="900" text-anchor="middle">预测</text>
+            <circle cx="570" cy="240" r="26" fill="#FFD23F" stroke="#1B3A40" stroke-width="3">
+              <animate attributeName="r" values="26;30;26" dur="1.2s" repeatCount="indefinite"/>
+            </circle>
+            <text x="570" y="244" font-size="11" font-weight="900" text-anchor="middle">预测</text>
           </g>
           <!-- 连线 -->
-          <g stroke="#B388FF" stroke-width="1.5" opacity=".6" class="nn-lines">
+          <g stroke="#B388FF" stroke-width="1.4" opacity=".55" stroke-dasharray="4 4">
             <line v-for="(_, i) in 12" :key="i"
-                  :x1="140" :y1="135 + (i%3)*80"
-                  :x2="256" :y2="100 + Math.floor(i/3)*70"/>
+                  :x1="140" :y1="164 + (i%3)*70"
+                  :x2="240" :y2="140 + Math.floor(i/3)*60"/>
             <line v-for="(_, j) in 12" :key="'a'+j"
-                  :x1="304" :y1="100 + Math.floor(j/3)*70"
-                  :x2="436" :y2="150 + (j%3)*70"/>
+                  :x1="280" :y1="140 + Math.floor(j/3)*60"
+                  :x2="400" :y2="180 + (j%3)*60"/>
             <line v-for="(_, k) in 3" :key="'b'+k"
-                  :x1="484" :y1="150 + k*70"
-                  :x2="590" :y2="210"/>
+                  :x1="440" :y1="180 + k*60"
+                  :x2="544" :y2="240"/>
+            <animate attributeName="opacity" values=".3;.8;.3" dur="1.4s" repeatCount="indefinite"/>
           </g>
-          <!-- 流动数据点 -->
-          <circle class="flow-1" r="5" fill="#FF9F1C" stroke="#1B3A40" stroke-width="1.5"/>
-          <circle class="flow-2" r="5" fill="#FF9F1C" stroke="#1B3A40" stroke-width="1.5"/>
-          <!-- 输出准确率 -->
-          <text x="620" y="280" font-size="18" font-weight="900" fill="#1B3A40" text-anchor="middle" class="accuracy">87% ✓</text>
+          <!-- 考题箱子（20% 测试集出题） -->
+          <g transform="translate(700,140)">
+            <rect x="-40" y="-30" width="80" height="80" fill="#FF9F1C" stroke="#1B3A40" stroke-width="2.4" rx="6"/>
+            <text x="0" y="-10" font-size="11" font-weight="900" text-anchor="middle" fill="#fff">考题</text>
+            <text x="0" y="6" font-size="22" font-weight="900" text-anchor="middle" fill="#fff">📋</text>
+            <text x="0" y="32" font-size="9" font-weight="900" text-anchor="middle" fill="#fff">没见过</text>
+            <text x="0" y="42" font-size="9" font-weight="900" text-anchor="middle" fill="#fff">的题目</text>
+          </g>
+          <!-- 考题箭头指向预测圆 -->
+          <path d="M660 200 q-40 30 -64 38" stroke="#FF9F1C" stroke-width="2.4" fill="none" stroke-dasharray="6 4">
+            <animate attributeName="stroke-dashoffset" values="0;-30" dur="1.4s" repeatCount="indefinite"/>
+          </path>
+          <polygon points="600,236 612,240 598,246" fill="#FF9F1C" stroke="#1B3A40" stroke-width="1.2"/>
+          <!-- 分数 -->
+          <g transform="translate(700,300)">
+            <rect x="-46" y="-22" width="92" height="50" fill="#52C474" stroke="#1B3A40" stroke-width="2.4" rx="8"/>
+            <text x="0" y="-2" font-size="11" font-weight="900" text-anchor="middle" fill="#fff">考试通过</text>
+            <text x="0" y="20" font-size="22" font-weight="900" text-anchor="middle" fill="#fff">87 ✓</text>
+            <animateTransform attributeName="transform" type="scale" values="1; 1.08; 1" dur="1.4s" repeatCount="indefinite" additive="sum"/>
+            <animateTransform attributeName="transform" type="translate" values="700,300" dur="1.4s" repeatCount="indefinite"/>
+          </g>
         </svg>
 
         <!-- 帧 8：决策 -->
