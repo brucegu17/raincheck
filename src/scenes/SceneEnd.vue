@@ -14,6 +14,7 @@ import { ACHIEVEMENTS } from '../game/achievements';
 import { EQUIPMENT } from '../game/equipment';
 import { dbLoad, dbSaveAll, nowStr, type ScoreRecord } from '../utils/storage';
 import { exportCsv } from '../utils/csv';
+import { finishAttempt } from '../utils/scoreClient';
 
 const game = useGame();
 
@@ -40,11 +41,28 @@ function refreshBoard() {
   board.value = dbLoad().slice().sort((a, b) => b.total - a.total).slice(0, 10);
 }
 
-onMounted(() => {
+onMounted(async () => {
   const list = dbLoad();
   list.push(rec.value);
   dbSaveAll(list);
   refreshBoard();
+
+  const result = await finishAttempt({
+    score: game.total,
+    breakdown: {
+      collect: game.pts.collect,
+      clean:   game.pts.clean,
+      train:   game.pts.train,
+      decide:  game.pts.decide,
+    },
+    set:   game.setKey,
+    stars: totalStars.value,
+    title: game.title,
+  });
+
+  if (!result.ok && !result.offline) {
+    game.showToast(result.reason || '成绩上传失败，请告诉老师');
+  }
 });
 
 const medal = ['🥇', '🥈', '🥉'];

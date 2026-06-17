@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>洪水预报员 · 老师入口</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,-apple-system,"PingFang SC",sans-serif;background:#fef9e7;display:flex;min-height:100vh;align-items:center;justify-content:center}
+.card{background:#fff;border:3px solid #1a1a1a;border-radius:18px;padding:36px;box-shadow:6px 6px 0 #1a1a1a;width:340px;text-align:center}
+h1{margin:0 0 6px;font-size:22px}
+p{color:#666;margin:0 0 18px}
+input{width:100%;font-size:18px;padding:10px 14px;border:2px solid #1a1a1a;border-radius:10px;text-align:center;letter-spacing:6px}
+button{margin-top:14px;width:100%;font-size:16px;font-weight:700;padding:10px;border:2px solid #1a1a1a;border-radius:10px;background:#fde047;cursor:pointer;box-shadow:3px 3px 0 #1a1a1a}
+button:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 #1a1a1a}
+.err{color:#c00;margin-top:10px;font-size:14px;min-height:20px}
+</style>
+</head>
+<body>
+<form class="card" method="post" action="/admin/login">
+  <h1>👩‍🏫 老师入口</h1>
+  <p>请输入口令</p>
+  <input name="password" type="password" autocomplete="off" autofocus inputmode="numeric" />
+  <button type="submit">进入</button>
+  <div class="err">{{.Error}}</div>
+</form>
+</body>
+</html>

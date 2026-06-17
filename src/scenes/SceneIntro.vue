@@ -6,16 +6,29 @@ import Center from '../primitives/Center.vue';
 import AlarmIntro from '../components/AlarmIntro.vue';
 import ModeSelect from '../components/ModeSelect.vue';
 import { useGame } from '../game/store';
+import { startAttempt, isOnline } from '../utils/scoreClient';
 
 const game = useGame();
 const phase = ref<'alarm' | 'setup'>('alarm');
 const name = ref('');
 const classCode = ref('');
+const busy = ref(false);
 
 function onAlarmDone() { phase.value = 'setup'; }
-function go() {
+async function go() {
+  if (busy.value) return;
   if (!name.value.trim()) { game.showToast('先告诉云博士你的名字呀！'); return; }
-  game.startGame(name.value, classCode.value);
+  busy.value = true;
+  try {
+    if (isOnline()) {
+      const cls = classCode.value.trim() || '未分班';
+      const r = await startAttempt(cls, name.value.trim());
+      if (!r.ok) { game.showToast(r.reason || '无法开始：请告诉老师'); return; }
+    }
+    game.startGame(name.value, classCode.value);
+  } finally {
+    busy.value = false;
+  }
 }
 </script>
 <template>
@@ -37,7 +50,7 @@ function go() {
         <div class="name-box">
           <input v-model="name" class="ipt" maxlength="12" placeholder="你的名字…" @keydown.enter="go" />
           <input v-model="classCode" class="ipt small" maxlength="10" placeholder="班级码（可选）" />
-          <button class="btn" @click="go">出发 🚀</button>
+          <button class="btn" :disabled="busy" @click="go">{{ busy ? '准备中…' : '出发 🚀' }}</button>
         </div>
       </template>
     </Stack>

@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>洪水预报员 · 老师面板</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,-apple-system,"PingFang SC",sans-serif;background:#f7f7f9;color:#1a1a1a;margin:0;padding:24px}
+h1{margin:0 0 6px} .sub{color:#666;margin-bottom:18px}
+.cards{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.card{background:#fff;border:2px solid #1a1a1a;border-radius:12px;padding:12px 18px;box-shadow:3px 3px 0 #1a1a1a;min-width:120px}
+.card .n{font-size:28px;font-weight:800} .card .k{color:#666;font-size:13px}
+table{border-collapse:collapse;width:100%;background:#fff;border:2px solid #1a1a1a;border-radius:12px;overflow:hidden}
+th,td{padding:8px 12px;border-bottom:1px solid #e7e7ee;text-align:left;font-size:14px}
+th{background:#fde047} tr:last-child td{border-bottom:none}
+.score{font-weight:800}
+.actions a{display:inline-block;margin-right:6px;color:#1f6feb;cursor:pointer;text-decoration:underline;font-size:13px}
+.actions a.danger{color:#c00}
+.toolbar{display:flex;gap:10px;align-items:center;margin-bottom:12px}
+.btn{display:inline-block;padding:8px 14px;border:2px solid #1a1a1a;border-radius:10px;background:#fde047;text-decoration:none;color:#1a1a1a;font-weight:700;box-shadow:2px 2px 0 #1a1a1a;cursor:pointer}
+</style>
+</head>
+<body>
+<h1>👩‍🏫 老师面板</h1>
+<div class="sub">下课后导出 CSV 给班主任 / 教务处。</div>
+
+<div class="cards">
+  <div class="card"><div class="n">{{.TotalStudents}}</div><div class="k">学生数</div></div>
+  <div class="card"><div class="n">{{.TotalAttempts}}</div><div class="k">提交次数</div></div>
+  <div class="card"><div class="n">{{.TopScore}}</div><div class="k">最高分</div></div>
+  <div class="card"><div class="n">{{.AvgScore}}</div><div class="k">平均分</div></div>
+</div>
+
+<div class="toolbar">
+  <a class="btn" href="/admin/export.csv">📥 导出 CSV</a>
+  <a class="btn" href="/admin">🔄 刷新</a>
+</div>
+
+<table>
+  <thead><tr>
+    <th>排名</th><th>班级</th><th>姓名</th><th>第 1 次</th><th>第 2 次</th><th>最高分</th><th>题集</th><th>操作</th>
+  </tr></thead>
+  <tbody>
+  {{range $i, $r := .Rows}}
+    <tr>
+      <td>{{add $i 1}}</td>
+      <td>{{$r.Class}}</td>
+      <td>{{$r.Name}}</td>
+      <td>{{$r.Attempt1}}</td>
+      <td>{{$r.Attempt2}}</td>
+      <td class="score">{{$r.Best}}</td>
+      <td>{{$r.Sets}}</td>
+      <td class="actions">
+        <a onclick="renameStudent('{{$r.Class}}','{{$r.Name}}')">改名</a>
+        <a onclick="resetOne('{{$r.Class}}','{{$r.Name}}')">重置</a>
+        <a class="danger" onclick="del('{{$r.Class}}','{{$r.Name}}')">删除</a>
+      </td>
+    </tr>
+  {{end}}
+  </tbody>
+</table>
+
+<script>
+async function post(url, payload) {
+  const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+  const j = await res.json().catch(()=>({}));
+  if (!res.ok) { alert(j.reason || ('错误 '+res.status)); return false; }
+  return true;
+}
+async function renameStudent(c, n) {
+  const newName = prompt('新姓名（同班级）：', n);
+  if (!newName || newName === n) return;
+  if (await post('/admin/api/rename', {fromClass:c, fromName:n, toClass:c, toName:newName})) location.reload();
+}
+async function resetOne(c, n) {
+  if (!confirm(`重置 ${c} ${n} 的最近一次成绩？`)) return;
+  if (await post('/admin/api/reset', {class:c, name:n})) location.reload();
+}
+async function del(c, n) {
+  if (!confirm(`删除 ${c} ${n} 的全部成绩？此操作不可撤销`)) return;
+  if (await post('/admin/api/delete', {class:c, name:n})) location.reload();
+}
+</script>
+</body>
+</html>
