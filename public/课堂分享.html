@@ -6,500 +6,383 @@
 <title>当 50 个四年级孩子真的动手做了一个 AI</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.7.0/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-:root {
-  --paper: #FFFCF2;
-  --sky: #BEE9FF;
-  --sky-2: #E8F8FF;
-  --sun: #FFD23F;
-  --grass: #7FD179;
-  --coral: #FF6B6B;
-  --coral-2: #FF5252;
-  --ink: #3D2E5B;
-  --ink-soft: #6B5B8A;
-  --line: #E5DAFA;
-}
 * { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #FAFAF7;
+  --ink: #1A1A1A;
+  --ink-soft: #5A5A5A;
+  --ink-mute: #888;
+  --line: #E5E5E0;
+  --accent: #C8553D;
+}
 body {
-  font-family: "Noto Sans SC", "PingFang SC", sans-serif;
-  font-weight: 400;
-  background: linear-gradient(180deg, var(--sky) 0%, var(--sky-2) 30%, var(--paper) 100%);
+  font-family: "Noto Serif SC", Georgia, serif;
+  background: var(--bg);
   color: var(--ink);
-  line-height: 1.75;
+  line-height: 1.85;
+  font-size: 16px;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
-
 .wrap {
-  max-width: 720px;
+  max-width: 640px;
   margin: 0 auto;
-  padding: 32px 20px 60px;
+  padding: 56px 24px 80px;
 }
 
-/* 顶部 hero */
-.hero {
-  background: white;
-  border: 3px solid var(--ink);
-  border-radius: 28px;
-  padding: 36px 28px 32px;
-  box-shadow: 0 8px 0 var(--ink);
-  margin-bottom: 28px;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-}
-.hero::before {
-  content: "🌧️";
-  position: absolute;
-  top: -20px; right: -10px;
-  font-size: 120px; opacity: 0.08;
-  transform: rotate(15deg);
-}
-.tag {
-  display: inline-block;
-  background: var(--sun);
-  border: 2.5px solid var(--ink);
-  border-radius: 999px;
-  padding: 5px 18px;
-  font-family: "LXGW WenKai", sans-serif;
-  font-size: 14px; font-weight: 700;
-  box-shadow: 0 3px 0 var(--ink);
+/* 顶部 */
+.kicker {
+  font-family: "Noto Sans SC", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  color: var(--ink-mute);
+  text-transform: uppercase;
   margin-bottom: 18px;
 }
 h1 {
-  font-family: "LXGW WenKai", "Noto Sans SC", sans-serif;
-  font-size: 32px;
-  font-weight: 900;
-  line-height: 1.25;
-  margin-bottom: 14px;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.35;
+  margin-bottom: 18px;
   color: var(--ink);
-}
-h1 .hl {
-  color: var(--coral-2);
-  position: relative;
-  z-index: 1;
-}
-h1 .hl::after {
-  content: "";
-  position: absolute;
-  left: -2px; right: -2px; bottom: 4%; top: 65%;
-  background: var(--sun);
-  z-index: -1;
-  border-radius: 4px;
-  transform: skewX(-4deg);
+  letter-spacing: -0.01em;
 }
 .lead {
-  font-size: 16px;
+  font-size: 17px;
   color: var(--ink-soft);
-  font-weight: 500;
+  margin-bottom: 28px;
+  line-height: 1.75;
 }
 .meta {
-  margin-top: 18px;
-  padding-top: 14px;
-  border-top: 1.5px dashed var(--line);
+  font-family: "Noto Sans SC", sans-serif;
   font-size: 13px;
-  color: var(--ink-soft);
-  display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
+  color: var(--ink-mute);
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 40px;
 }
+.meta span { margin-right: 18px; }
 
-/* 通用段落卡片 */
-.card {
-  background: white;
-  border: 3px solid var(--ink);
-  border-radius: 24px;
-  padding: 28px 24px;
-  box-shadow: 0 6px 0 var(--ink);
-  margin-bottom: 22px;
-}
-.card.sky-bg { background: linear-gradient(180deg, #DDEFFF 0%, #FFFFFF 100%); }
-.card.sun-bg { background: linear-gradient(180deg, #FFF6CC 0%, #FFFFFF 60%); }
-.card.grass-bg { background: linear-gradient(180deg, #DCF4D2 0%, #FFFFFF 100%); }
-.card.coral-bg { background: linear-gradient(180deg, #FFE0E0 0%, #FFFFFF 100%); }
-
+/* 正文 */
 h2 {
-  font-family: "LXGW WenKai", sans-serif;
-  font-size: 22px;
-  font-weight: 900;
-  margin-bottom: 14px;
+  font-size: 20px;
+  font-weight: 600;
+  margin: 44px 0 16px;
   color: var(--ink);
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  letter-spacing: -0.005em;
 }
-h2 .num {
-  display: inline-grid;
-  place-items: center;
-  width: 32px; height: 32px;
-  background: var(--coral);
-  color: white;
-  border: 2.5px solid var(--ink);
-  border-radius: 50%;
-  font-size: 16px;
-  font-weight: 900;
-  box-shadow: 0 2px 0 var(--ink);
+h2::before {
+  content: "";
+  display: inline-block;
+  width: 4px; height: 18px;
+  background: var(--accent);
+  vertical-align: -3px;
+  margin-right: 10px;
 }
-h3 {
-  font-family: "LXGW WenKai", sans-serif;
-  font-size: 18px;
-  font-weight: 700;
-  margin-top: 16px;
-  margin-bottom: 8px;
+p {
+  margin-bottom: 16px;
   color: var(--ink);
 }
-
-p { margin-bottom: 12px; font-size: 16px; color: var(--ink); }
-p.note { color: var(--ink-soft); font-size: 14px; }
-strong, b { color: var(--coral-2); font-weight: 700; }
-
-ul, ol { padding-left: 24px; margin-bottom: 12px; }
-li { margin-bottom: 6px; font-size: 16px; }
-
-/* 照片墙 */
-.photos {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-top: 16px;
-}
-.photo {
-  border: 3px solid var(--ink);
-  border-radius: 18px;
-  overflow: hidden;
-  box-shadow: 0 4px 0 var(--ink);
-  background: white;
-  aspect-ratio: 4 / 3;
-  position: relative;
-}
-.photo.tall { aspect-ratio: 3 / 4; }
-.photo.full { grid-column: 1 / -1; aspect-ratio: 4 / 3; }
-.photo img {
-  width: 100%; height: 100%; object-fit: cover; display: block;
-}
-.cap {
-  font-size: 12px;
+p.note {
   color: var(--ink-soft);
-  text-align: center;
-  margin-top: 8px;
-  font-family: "LXGW WenKai", sans-serif;
+  font-size: 15px;
+}
+strong, b {
+  color: var(--ink);
+  font-weight: 600;
 }
 
 /* 引文 */
-.quote {
-  background: linear-gradient(180deg, #FFF6CC 0%, #FFE680 100%);
-  border: 3px solid var(--ink);
-  border-left: 8px solid var(--coral-2);
-  border-radius: 18px;
-  padding: 16px 22px;
-  font-family: "LXGW WenKai", sans-serif;
-  font-size: 17px;
-  color: var(--ink);
-  margin: 14px 0;
-  box-shadow: 0 4px 0 var(--ink);
-  position: relative;
-}
-.quote::before {
-  content: "💬";
-  position: absolute;
-  top: -16px; left: 18px;
-  font-size: 28px;
-  filter: drop-shadow(0 2px 0 var(--ink));
-}
-
-/* 改进点 grid */
-.improvements {
-  display: grid;
-  gap: 12px;
-  margin-top: 14px;
-}
-.imp {
-  background: white;
-  border: 2.5px solid var(--ink);
-  border-radius: 16px;
-  padding: 14px 16px;
-  box-shadow: 0 4px 0 var(--ink);
-  display: flex;
-  gap: 14px;
-  align-items: flex-start;
-}
-.imp .ico {
-  font-size: 28px;
-  line-height: 1;
-  flex-shrink: 0;
-}
-.imp .body { flex: 1; }
-.imp .ttl {
-  font-family: "LXGW WenKai", sans-serif;
-  font-weight: 700;
-  font-size: 16px;
-  margin-bottom: 4px;
-  color: var(--ink);
-}
-.imp .desc {
-  font-size: 14px;
+blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 4px 0 4px 20px;
+  margin: 20px 0;
   color: var(--ink-soft);
+  font-style: italic;
+  font-size: 16px;
+}
+blockquote p { margin-bottom: 6px; }
+
+/* 列表 */
+ul { padding-left: 22px; margin-bottom: 16px; }
+li { margin-bottom: 8px; color: var(--ink); }
+
+/* 照片 */
+figure {
+  margin: 28px 0;
+}
+figure img {
+  width: 100%;
+  display: block;
+  border-radius: 2px;
+}
+figcaption {
+  font-family: "Noto Sans SC", sans-serif;
+  font-size: 13px;
+  color: var(--ink-mute);
+  text-align: center;
+  margin-top: 10px;
+}
+.gallery {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 28px 0;
+}
+.gallery img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  display: block;
+  border-radius: 2px;
 }
 
-/* 下载行动卡 */
+/* 改进点列表 */
+.changes {
+  margin: 16px 0 24px;
+}
+.change {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+}
+.change:last-child { border-bottom: none; }
+.change-title {
+  font-family: "Noto Sans SC", sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.change-desc {
+  font-size: 15px;
+  color: var(--ink-soft);
+  line-height: 1.7;
+}
+
+/* 下载区 */
 .download {
-  background: linear-gradient(160deg, var(--coral) 0%, var(--coral-2) 100%);
-  border: 3px solid var(--ink);
-  border-radius: 24px;
-  padding: 26px 22px;
-  box-shadow: 0 8px 0 var(--ink);
-  color: white;
-  text-align: center;
-  margin-bottom: 24px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 28px 24px;
+  margin: 40px 0;
+  background: white;
 }
 .download h2 {
-  color: white;
-  justify-content: center;
-  margin-bottom: 10px;
+  margin-top: 0;
+  font-size: 18px;
 }
-.download p { color: rgba(255,255,255,.95); }
-.dl-buttons {
-  display: flex; flex-direction: column;
-  gap: 10px; margin-top: 16px;
-}
-.dl-btn {
-  display: flex; align-items: center; gap: 12px;
-  background: white; color: var(--ink);
-  border: 2.5px solid var(--ink);
-  border-radius: 14px;
-  padding: 12px 18px;
-  text-decoration: none;
-  box-shadow: 0 4px 0 var(--ink);
-  font-family: "LXGW WenKai", sans-serif;
-  font-weight: 700;
-  font-size: 16px;
-  transition: all 0.1s;
-}
-.dl-btn:active {
-  transform: translateY(3px);
-  box-shadow: 0 1px 0 var(--ink);
-}
-.dl-btn .ico { font-size: 24px; }
-.dl-btn .sub {
+.download h2::before { display: none; }
+.dl-list { margin-top: 14px; }
+.dl-item {
   display: block;
-  font-size: 12px;
-  font-weight: 400;
-  color: var(--ink-soft);
-  margin-top: 2px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+  text-decoration: none;
+  color: var(--ink);
+  transition: color 0.15s;
 }
-
-/* 角色卡 */
-.roles {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-  margin-top: 12px;
+.dl-item:last-child { border-bottom: none; }
+.dl-item:hover { color: var(--accent); }
+.dl-item .t {
+  font-family: "Noto Sans SC", sans-serif;
+  font-weight: 500;
+  font-size: 15px;
+  margin-bottom: 2px;
 }
-.role {
-  border: 2.5px solid var(--ink);
-  border-radius: 14px;
-  padding: 14px 10px;
-  text-align: center;
-  box-shadow: 0 4px 0 var(--ink);
+.dl-item .s {
+  font-family: "Noto Sans SC", sans-serif;
+  font-size: 13px;
+  color: var(--ink-mute);
 }
-.role:nth-child(1) { background: linear-gradient(180deg, #DCF4D2, #B6E6A6); }
-.role:nth-child(2) { background: linear-gradient(180deg, #FFE0EE, #FFB8DA); }
-.role:nth-child(3) { background: linear-gradient(180deg, #DDEFFF, #B0DAFF); }
-.role:nth-child(4) { background: linear-gradient(180deg, #FFF6CC, #FFE680); }
-.role .emoji { font-size: 32px; line-height: 1; }
-.role .n {
-  font-family: "LXGW WenKai", sans-serif;
-  font-weight: 900;
-  font-size: 16px;
-  margin: 6px 0 2px;
-}
-.role .d {
-  font-size: 12px;
-  color: var(--ink-soft);
+.dl-item .arrow {
+  float: right;
+  color: var(--ink-mute);
+  font-family: sans-serif;
 }
 
 /* footer */
 .foot {
-  text-align: center;
-  padding: 24px 0 0;
+  margin-top: 56px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+  font-family: "Noto Sans SC", sans-serif;
   font-size: 13px;
-  color: var(--ink-soft);
+  color: var(--ink-mute);
+  text-align: center;
+  line-height: 1.8;
 }
-.foot p { font-size: 13px; margin-bottom: 6px; }
+.foot a { color: var(--accent); text-decoration: none; }
+.foot a:hover { text-decoration: underline; }
 
-/* 链接 */
-a { color: var(--coral-2); font-weight: 500; }
+/* 角色 简洁版 */
+.roles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  margin: 20px 0;
+}
+.role {
+  background: var(--bg);
+  padding: 16px;
+  text-align: center;
+}
+.role .em { font-size: 22px; }
+.role .n {
+  font-family: "Noto Sans SC", sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  margin: 6px 0 2px;
+}
+.role .d {
+  font-family: "Noto Sans SC", sans-serif;
+  font-size: 12px;
+  color: var(--ink-mute);
+}
 
 @media (max-width: 480px) {
-  h1 { font-size: 26px; }
-  .hero { padding: 28px 22px 26px; }
-  .card { padding: 22px 18px; }
-  .roles { grid-template-columns: 1fr 1fr; }
+  .wrap { padding: 40px 20px 60px; }
+  h1 { font-size: 24px; }
+  body { font-size: 15px; }
 }
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <!-- HERO -->
-  <div class="hero">
-    <span class="tag">🎓 课堂实录 · 2026.06.18</span>
-    <h1>当 50 个四年级孩子<br>真的<span class="hl">动手做了一个 AI</span></h1>
-    <p class="lead">一个下午，他们不仅看懂了 AI，<br>还亲手把"清溪镇"从洪水里救了出来。</p>
-    <div class="meta">
-      <span>📍 庐江县某小学</span>
-      <span>👨‍🏫 讲解人 · 顾志强</span>
-      <span>⏱️ 课堂 15 分钟 + 游戏 10 分钟</span>
+  <p class="kicker">课堂实录 · 2026.06.18</p>
+  <h1>当 50 个四年级孩子<br>真的动手做了一个 AI</h1>
+  <p class="lead">一个下午，他们不仅看懂了 AI，还亲手把"清溪镇"从洪水里救了出来。</p>
+  <p class="meta">
+    <span>📍 庐江县某小学</span>
+    <span>👨‍🏫 讲解人 顾志强</span>
+    <span>⏱ 15 + 10 分钟</span>
+  </p>
+
+  <h2>今天发生了什么</h2>
+  <p>今天下午，我又一次走进女儿班级，给四年级的 50 个小朋友讲了一节关于 AI 的课。</p>
+  <p>这是我连续第二年来这个学校——<b>去年他们三年级</b>，那时候问"谁知道 AI"，举手的没几个；今年再问，<b>呼啦一片手举起来</b>。</p>
+  <p>更让我没想到的是：当我说"今天你们要亲手做一个 AI"——孩子们的眼睛全亮了。</p>
+
+  <figure>
+    <img src="photos/photo-6.png" alt="课堂讨论现场">
+    <figcaption>课前互动：孩子们围在电脑前讨论 AI 是什么</figcaption>
+  </figure>
+
+  <h2>孩子们的反响，远超预期</h2>
+  <p>我原本担心：四年级，能听懂"训练集 / 测试集 / 概率"这些词吗？</p>
+  <p>结果完全相反。</p>
+  <blockquote>
+    <p>当我讲到"概率"这个词，话音还没落——</p>
+    <p>有个小男生立刻接上："一个硬币抛出去，正反两面的概率就是 50%！"</p>
+  </blockquote>
+  <p>那一刻我意识到——<b>孩子对新知识的接受度，远比我们想的要强</b>。问题从来不是他们听不懂，而是<b>大人讲得不够好</b>。</p>
+
+  <div class="gallery">
+    <img src="photos/photo-7.png" alt="孩子专注游戏">
+    <img src="photos/photo-8.png" alt="同学协作">
+  </div>
+
+  <h2>这个项目是什么</h2>
+  <p>名字叫《<b>洪水预报员 · 清溪镇保卫战</b>》。一个浏览器就能玩的 AI 素养游戏，专门为小学三、四年级孩子设计。不用下载、不用注册、断网也能玩。</p>
+  <p>孩子要在游戏里扮演四种角色，亲手走完 AI 的四个步骤：</p>
+
+  <div class="roles">
+    <div class="role">
+      <div class="em">🔍</div>
+      <div class="n">小侦探</div>
+      <div class="d">收集和洪水有关的数据</div>
+    </div>
+    <div class="role">
+      <div class="em">🩺</div>
+      <div class="n">数据医生</div>
+      <div class="d">把脏数据揪出来</div>
+    </div>
+    <div class="role">
+      <div class="em">🧠</div>
+      <div class="n">AI 教练</div>
+      <div class="d">教 AI 学会预测</div>
+    </div>
+    <div class="role">
+      <div class="em">🎯</div>
+      <div class="n">小镇长</div>
+      <div class="d">拍板发不发预警</div>
     </div>
   </div>
 
-  <!-- 开场：今天发生了什么 -->
-  <div class="card sky-bg">
-    <h2><span class="num">1</span>今天发生了什么？</h2>
-    <p>今天下午，我又一次走进女儿班级，给四年级的 50 个小朋友讲了一节关于 <b>AI</b> 的课。</p>
-    <p>这是我连续第二年来这个学校——<b>去年他们三年级</b>，那时候问"谁知道 AI"，举手的没几个；今年再问，<b>呼啦一片手举起来</b>。</p>
-    <p>更让我没想到的是：当我说"今天你们要亲手做一个 AI"——孩子们的眼睛全亮了。</p>
+  <p>10 分钟一局——玩完一遍，他们就亲手做了一个 AI 洪水预报系统。</p>
 
-    <div class="photos">
-      <div class="photo full"><img src="photos/photo-6.png" alt="课堂讨论"></div>
-      <div class="photo tall"><img src="photos/photo-7.png" alt="孩子专注游戏"></div>
-      <div class="photo tall"><img src="photos/photo-8.png" alt="同学协作"></div>
-      <div class="photo full"><img src="photos/photo-10.png" alt="全班游戏中"></div>
+  <figure>
+    <img src="photos/photo-10.png" alt="全班游戏">
+    <figcaption>50 个孩子同时在线，每人一台电脑，扫黑板上的网址即可开始</figcaption>
+  </figure>
+
+  <h2>这次我们做了哪些改进</h2>
+  <p class="note">距离第一版上线后，我们陆续做了下面这些调整。目标只有一个：让小朋友听得懂、玩得爽、学得到。</p>
+
+  <div class="changes">
+    <div class="change">
+      <div class="change-title">PPT 全面糖果绘本风</div>
+      <div class="change-desc">告别花花绿绿的 emoji 堆砌，换成天蓝草绿配色 + 圆滚卡通字体，孩子一眼喜欢。</div>
+    </div>
+    <div class="change">
+      <div class="change-title">关卡改成角色扮演</div>
+      <div class="change-desc">从"第一关：收集数据"改成"当小侦探"——孩子是在演角色，不是在做作业。</div>
+    </div>
+    <div class="change">
+      <div class="change-title">讲解脚本三段式重写</div>
+      <div class="change-desc">每段 5 分钟，节奏清晰。加 5 个真实 AI 案例（救罕见病女孩、模仿周杰伦唱歌、奥赛银牌……），孩子听得目瞪口呆。</div>
+    </div>
+    <div class="change">
+      <div class="change-title">教室局域网部署</div>
+      <div class="change-desc">老师双击一个 .exe 文件，50 个学生扫黑板上的网址就能玩，成绩自动上传，下课导出 CSV。</div>
+    </div>
+    <div class="change">
+      <div class="change-title">题集智能旋转</div>
+      <div class="change-desc">同桌不会撞题，同一个人玩两次不撞同一套——每个孩子的体验都不一样。</div>
+    </div>
+    <div class="change">
+      <div class="change-title">性能压测验证</div>
+      <div class="change-desc">50 人同时在线只占服务器能力的 0.1%，再多一个班也扛得住。</div>
     </div>
   </div>
 
-  <!-- 反响 -->
-  <div class="card sun-bg">
-    <h2><span class="num">2</span>孩子们的反响，远超预期</h2>
-    <p>我原本担心：四年级，能听懂"训练集 / 测试集 / 概率"这些词吗？</p>
-    <p>结果完全相反。</p>
-
-    <div class="quote">
-      当我讲到"概率"这个词，话音还没落——<br>
-      有个小男生立刻接上："一个硬币抛出去，正反两面的概率就是 50%！"
-    </div>
-
-    <p>那一刻我意识到——<b>孩子对新知识的接受度，远比我们想的要强</b>。<br>问题从来不是他们听不懂，而是<b>大人讲得不够好</b>。</p>
-  </div>
-
-  <!-- 这个项目是什么 -->
-  <div class="card grass-bg">
-    <h2><span class="num">3</span>这个项目是什么？</h2>
-    <p>名字叫《<b>洪水预报员 · 清溪镇保卫战</b>》。</p>
-    <p>它是一个浏览器就能玩的 AI 素养游戏，专门为小学三、四年级孩子设计。<b>不用下载、不用注册、断网也能玩</b>。</p>
-    <p>孩子要在游戏里扮演四种角色，亲手走完 AI 的四个步骤：</p>
-
-    <div class="roles">
-      <div class="role">
-        <div class="emoji">🔍</div>
-        <div class="n">小侦探</div>
-        <div class="d">收集和洪水有关的数据</div>
-      </div>
-      <div class="role">
-        <div class="emoji">🩺</div>
-        <div class="n">数据医生</div>
-        <div class="d">把脏数据揪出来</div>
-      </div>
-      <div class="role">
-        <div class="emoji">🧠</div>
-        <div class="n">AI 教练</div>
-        <div class="d">教 AI 学会预测</div>
-      </div>
-      <div class="role">
-        <div class="emoji">🎯</div>
-        <div class="n">小镇长</div>
-        <div class="d">拍板发不发洪水预警</div>
-      </div>
-    </div>
-
-    <p style="margin-top:16px"><b>10 分钟一局</b>，玩完一遍——他们就亲手做了一个 AI 洪水预报系统。</p>
-  </div>
-
-  <!-- 这次做了哪些改进 -->
-  <div class="card coral-bg">
-    <h2><span class="num">4</span>这次我们做了哪些改进？</h2>
-    <p class="note">距离第一版上线后，我们陆续做了下面这些调整——目标只有一个：<b>让小朋友听得懂、玩得爽、学得到</b>。</p>
-
-    <div class="improvements">
-      <div class="imp">
-        <div class="ico">🎨</div>
-        <div class="body">
-          <div class="ttl">PPT 全面糖果绘本风</div>
-          <div class="desc">告别花花绿绿的 emoji 堆，换成天蓝草绿配色 + 圆滚卡通字体，孩子一眼就喜欢</div>
-        </div>
-      </div>
-      <div class="imp">
-        <div class="ico">🎭</div>
-        <div class="body">
-          <div class="ttl">关卡改成"角色扮演"</div>
-          <div class="desc">从"第一关：收集数据"改成"当小侦探" / "当数据医生"——孩子是在演角色，不是在做作业</div>
-        </div>
-      </div>
-      <div class="imp">
-        <div class="ico">📝</div>
-        <div class="body">
-          <div class="ttl">讲解脚本三段式重写</div>
-          <div class="desc">每段 5 分钟，节奏清晰；加 5 个真实 AI 案例（AI 救罕见病女孩、AI 模仿周杰伦唱歌……），孩子听得目瞪口呆</div>
-        </div>
-      </div>
-      <div class="imp">
-        <div class="ico">🏫</div>
-        <div class="body">
-          <div class="ttl">教室局域网部署</div>
-          <div class="desc">老师双击一个 .exe 文件，50 个学生扫黑板上的网址就能玩，成绩自动上传，下课导出 CSV</div>
-        </div>
-      </div>
-      <div class="imp">
-        <div class="ico">🎲</div>
-        <div class="body">
-          <div class="ttl">题集智能旋转</div>
-          <div class="desc">同桌不会撞题，同一个人玩两次不会撞题——保证每个孩子的体验都不一样</div>
-        </div>
-      </div>
-      <div class="imp">
-        <div class="ico">⚡</div>
-        <div class="body">
-          <div class="ttl">性能压测验证</div>
-          <div class="desc">50 人同时在线只占服务器能力的 0.1%——再多一个班也扛得住</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 下载卡 -->
   <div class="download">
-    <h2>📦 老师 & 家长可免费下载</h2>
-    <p>所有材料完全开源、免费、可商用。<br>带回去给孩子继续玩、给班级演示都可以。</p>
-    <div class="dl-buttons">
-      <a class="dl-btn" href="https://brucegu17.github.io/raincheck/" target="_blank">
-        <span class="ico">🎮</span>
-        <span>在线玩游戏（手机/电脑都行）<span class="sub">brucegu17.github.io/raincheck</span></span>
+    <h2>老师 &amp; 家长可免费下载</h2>
+    <p class="note">所有材料完全开源、免费、可商用。带回去给孩子继续玩、给班级演示都可以。</p>
+    <div class="dl-list">
+      <a class="dl-item" href="https://brucegu17.github.io/raincheck/" target="_blank">
+        <span class="arrow">→</span>
+        <div class="t">🎮 在线玩游戏</div>
+        <div class="s">brucegu17.github.io/raincheck（手机电脑都行）</div>
       </a>
-      <a class="dl-btn" href="https://brucegu17.github.io/raincheck/ppt.html" target="_blank">
-        <span class="ico">📊</span>
-        <span>12 页课堂 PPT（在线放映）<span class="sub">直接全屏给班级讲</span></span>
+      <a class="dl-item" href="https://brucegu17.github.io/raincheck/ppt.html" target="_blank">
+        <span class="arrow">→</span>
+        <div class="t">📊 12 页课堂 PPT</div>
+        <div class="s">直接全屏给班级讲</div>
       </a>
-      <a class="dl-btn" href="https://github.com/brucegu17/raincheck" target="_blank">
-        <span class="ico">💻</span>
-        <span>完整源码 + 教室服务器 .exe<span class="sub">GitHub · brucegu17/raincheck</span></span>
+      <a class="dl-item" href="https://github.com/brucegu17/raincheck" target="_blank">
+        <span class="arrow">→</span>
+        <div class="t">💻 完整源码 + 教室服务器 .exe</div>
+        <div class="s">GitHub · brucegu17/raincheck</div>
       </a>
     </div>
   </div>
 
-  <!-- 写给大人 -->
-  <div class="card">
-    <h2><span class="num">5</span>最后想说的</h2>
-    <p>很多人问我：四年级的孩子，讲 AI 是不是太早了？</p>
-    <p>我的回答是：<b>一点都不早</b>。</p>
-    <p>等他们大学毕业的时候，AI 早就长成了我们今天想象不到的样子。我们不能等到那时再去教——<b>就像不能等孩子上大学才教他认字</b>。</p>
-    <p>所以——</p>
-    <p>如果你是<b>小学老师</b>，欢迎把这套材料带进你的课堂；<br>如果你是<b>家长</b>，欢迎陪孩子在家玩一遍。</p>
-    <p>这件事，我会一直做下去。</p>
-  </div>
+  <h2>最后想说的</h2>
+  <p>很多人问我：四年级的孩子，讲 AI 是不是太早了？</p>
+  <p>我的回答是：<b>一点都不早</b>。</p>
+  <p>等他们大学毕业的时候，AI 早就长成了我们今天想象不到的样子。我们不能等到那时再去教——<b>就像不能等孩子上大学才教他认字</b>。</p>
+  <p>如果你是<b>小学老师</b>，欢迎把这套材料带进你的课堂；如果你是<b>家长</b>，欢迎陪孩子在家玩一遍。</p>
+  <p>这件事，我会一直做下去。</p>
 
-  <!-- footer -->
   <div class="foot">
-    <p>🌊 项目地址：<a href="https://github.com/brucegu17/raincheck">github.com/brucegu17/raincheck</a></p>
-    <p>欢迎转发、点赞、收藏，让更多孩子早一点遇见 AI。</p>
+    <p>项目地址：<a href="https://github.com/brucegu17/raincheck">github.com/brucegu17/raincheck</a></p>
+    <p>欢迎转发，让更多孩子早一点遇见 AI。</p>
   </div>
 
 </div>
