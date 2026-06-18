@@ -24,12 +24,27 @@ export function dbSaveAll(list: ScoreRecord[]): void {
 }
 export function dbStorageOk(): boolean { return storageOK; }
 
-export function pickRandomSetExcludingLast(keys: string[]): string {
+export function pickRandomSet(keys: string[], player?: string): string {
+  // 需要排除的题集：
+  const exclude = new Set<string>();
+
+  // ① 设备上一局 — 相邻同桌不撞题
   const lastSet = localStorage.getItem('qx_last_set');
-  const pool = keys.filter(k => k !== lastSet);
+  if (lastSet) exclude.add(lastSet);
+
+  // ② 同一玩家上一次 — 每人两次不撞题
+  if (player) {
+    const prev = localStorage.getItem(`qx_played_${player}`);
+    if (prev) exclude.add(prev);
+  }
+
+  const pool = keys.filter(k => !exclude.has(k));
   const drawFrom = pool.length ? pool : keys;
   const key = drawFrom[Math.floor(Math.random() * drawFrom.length)];
-  try { localStorage.setItem('qx_last_set', key); } catch {}
+  try {
+    localStorage.setItem('qx_last_set', key);
+    if (player) localStorage.setItem(`qx_played_${player}`, key);
+  } catch {}
   return key;
 }
 

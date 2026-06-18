@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { SETS, GOOD_SOURCES, type DataCard, type CleanRow, type DecisionDay } from './sets';
 import { TITLES } from './titles';
-import { pickRandomSetExcludingLast } from '../utils/storage';
+import { pickRandomSet } from '../utils/storage';
 import { applyTheme } from './theme';
 
 type Mode = 'adventure' | 'challenge';
@@ -89,8 +89,8 @@ export const useGame = defineStore('game', {
       this.startTime = performance.now();
       this.title = TITLES.novice;
 
-      // 抽题集（严格排除上一次）
-      this.setKey = pickRandomSetExcludingLast(['A','B','C']) as 'A'|'B'|'C';
+      // 抽题集（排除设备上一局 + 同一人上一次，每人两次不撞题）
+      this.setKey = pickRandomSet(['A','B','C'], this.player || name) as 'A'|'B'|'C';
       applyTheme(this.setKey);
       const CUR = SETS[this.setKey];
 
